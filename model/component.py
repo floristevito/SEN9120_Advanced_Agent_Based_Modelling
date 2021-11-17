@@ -1,5 +1,4 @@
-from mesa import Agent
-from enum import Enum
+import agentpy as ap
 
 """
 All model compontents
