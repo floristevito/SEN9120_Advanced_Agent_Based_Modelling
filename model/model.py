@@ -1,6 +1,6 @@
 import agentpy as ap
 import pandas as pd
-import networkx as nx
+import netwconorkx as nx
 
 """
 Main model block
