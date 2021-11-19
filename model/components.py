@@ -22,6 +22,10 @@ class Vehicle(EmtAgent):
     def charge(self):
         self.energy += 1
     
+    def step(self):
+        self.energy -= 1
+        print('Vehicle {} has {} energy left'.format(self.id, self.energy))
+    
 class Charger(EmtAgent):
     
     def setup(self):

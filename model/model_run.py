@@ -1,4 +1,12 @@
 import agentpy as ap
 import pandas as pd
-from collections import defaultdict
-import networkx as nx
+from model import EmtAgentsModel
+
+parameters = {
+    'vehicles': 10,
+    'chargers': 10,
+    'steps': 10
+}
+
+model = EmtAgentsModel(parameters)
+results = model.run()
