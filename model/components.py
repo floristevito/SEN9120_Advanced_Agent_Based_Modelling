@@ -24,7 +24,7 @@ class Vehicle(EmtAgent):
         self.energy -= 1
     
     def init_charge(self):
-        # check if charger left with energy
+        # check if charger left with free capacity 
         available_chargers = self.model.chargers.select(self.model.chargers.current_capacity > 0)
         if available_chargers:
             self.charger = available_chargers.random()
@@ -42,7 +42,7 @@ class Vehicle(EmtAgent):
         self.energy += 1
     
     def step(self):
-        if self.energy > 0:
+        if self.status != 'charging' and self.energy > 0:
             self.drive()
         else:
             self.init_charge()
