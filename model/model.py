@@ -16,3 +16,7 @@ class EmtAgentsModel(ap.Model):
     
     def step(self):
         self.vehicles.step()
+    
+    def update(self):
+        """ Record a dynamic variable. """
+        self.vehicles.record('energy')
