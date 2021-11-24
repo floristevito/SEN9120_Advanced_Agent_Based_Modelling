@@ -21,5 +21,6 @@ OD[['origin_id','destination_id','origin','destination','distance','INW_origin',
 
 OD['flow'] = OD.apply(lambda row: g * ((row['INW_origin'] * row['INW_destination']) / (row['distance']**2) if row['distance'] != 0 else 0), axis=1)
 #OD = OD.pivot(index='origin_id', columns='destination_id', values='distance')
-
+OD['sum_flow'] = OD.groupby('origin')['flow'].transform('sum')
+OD['p_flow'] = OD['flow'] / OD['sum_flow'] * 100
 OD
