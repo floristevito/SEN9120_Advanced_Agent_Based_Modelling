@@ -4,8 +4,8 @@ from model import EmtAgentsModel
 
 parameters = {
     'vehicles': 10,
-    'chargers': 10,
-    'steps': 10
+    'steps': 10,
+    'g': 0.000076,
 }
 
 model = EmtAgentsModel(parameters)
