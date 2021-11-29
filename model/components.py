@@ -46,6 +46,7 @@ class Municipality(EmtAgent):
         self.name = None
         self.OD = None
         self.id = None
+        self.inhabitants = None
         self.location = None
         self.total_charging_spots = None
         self.available_charging_spots = None
