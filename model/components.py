@@ -3,15 +3,7 @@ import agentpy as ap
 """
 All model compontents
 """
-
-class EmtAgent(ap.Agent):
-    
-    """Base class for all agents in this emt vehicle model"""
-
-    def setup(self):
-        pass
-
-class Vehicle(EmtAgent):
+class EV(ap.Agent):
     
     def setup(self):
         self.home_location = None           #location of the home of the agent                      [unit: - (municipality agent)]
@@ -41,7 +33,7 @@ class Vehicle(EmtAgent):
         if self.status != 'charging' and self.energy > 0:
             self.drive()
     
-class Municipality(EmtAgent):
+class Municipality(ap.Agent):
     def setup(self):
         self.name = None
         self.OD = None

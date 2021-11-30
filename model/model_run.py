@@ -6,6 +6,7 @@ parameters = {
     'vehicles': 10,
     'steps': 10,
     'g': 0.000076,
+    'percentage_ev': 0.0029,
 }
 
 model = EmtAgentsModel(parameters)
