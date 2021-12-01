@@ -15,7 +15,7 @@ class EmtAgentsModel(ap.Model):
         # generate the manicipalities according to data prep file
         self.OD = generate_OD(self.p.g)
         self.municipalities_data = pd.read_csv('../data/gemeenten.csv').set_index('GM_CODE')
-        self.municipalities = ap.AgentList(self, len(self.OD), Municipality)
+        self.municipalities = ap.AgentList(self, len(self.OD), Municipality) # generate all manucipality agents
         # give the right properties to every municipality according to data prep file
         for index, (key, value) in enumerate(self.OD.items()):
             self.municipalities.id[index] = key
@@ -25,13 +25,13 @@ class EmtAgentsModel(ap.Model):
             self.municipalities.number_EVs[index] = round(self.p.percentage_ev * self.municipalities.inhabitants[index])
         
         # generate EV's 
-        self.EVs = ap.AgentList(self, sum(self.municipalities.number_EVs), EV)
+        self.EVs = ap.AgentList(self, sum(self.municipalities.number_EVs), EV) # generate all EV agents
         index = 0 # keeps track of the EV index
         # give the right properties to every EV according to the data prep file
         for mun in self.municipalities:
             for ev in range(mun.number_EVs):
                 self.EVs.home_location[index] = mun.name
-                mapped_dest = mun.OD.sample(1, weights='p_flow')
+                mapped_dest = mun.OD.sample(1, weights='p_flow') # pick destination, higher p_flow gives higher chance to be picked
                 self.EVs.work_lococation_id[index] = mapped_dest['destination_id'].iloc[0]
                 self.EVs.work_location_name[index] = self.municipalities_data.loc[self.EVs.work_lococation_id[index], 'GM_NAAM']
                 self.EVs.commute_distance[index] = mapped_dest['distance'].iloc[0]
