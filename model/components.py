@@ -1,4 +1,6 @@
 import agentpy as ap
+import numpy as np
+import math
 
 """
 All model compontents
@@ -6,9 +8,7 @@ All model compontents
 class EV(ap.Agent):
     
     def setup(self):
-        self.name = name
-        self.charge_init = charge_init
-        self.charging_speed = 10
+        self.charging_speed = self.p.charging_speed
         self.price_memory = [[] for i in range(24)]
         self.average_price_memory = []
         
