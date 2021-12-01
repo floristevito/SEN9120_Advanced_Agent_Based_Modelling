@@ -1,5 +1,3 @@
-import agentpy as ap
-import pandas as pd
 from model import EmtAgentsModel
 
 parameters = {
