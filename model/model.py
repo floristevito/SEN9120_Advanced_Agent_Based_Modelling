@@ -11,9 +11,12 @@ Main model block
 
 class EmtAgentsModel(ap.Model):
     """Main model that simulates electric vehicles"""
-
     def setup(self):
-
+        # model properties
+        self.eletricity_prices = pd.read_csv('testing_hour_prices2.csv', sep=';',decimal = ',')
+        self.price_memory = [[] for i in range(24)]
+        self.average_price_memory = []
+        
         # generate the manicipalities according to data prep file
         self.OD = generate_OD(self.p.g)
         self.municipalities_data = pd.read_csv(
@@ -45,9 +48,14 @@ class EmtAgentsModel(ap.Model):
                 index += 1
 
     def step(self):
-        # move EVs
-        self.EVs.step()
-
+        pass
+    
     def update(self):
         """ Record a dynamic variable. """
-        self.EVs.record('energy')
+        pass
+        
+    def fill_memory_EVs(self):
+        '''
+        Fills the memory of agents with the previous prices and calculates average
+        '''
+        pass
