@@ -13,7 +13,7 @@ class EmtAgentsModel(ap.Model):
     """Main model that simulates electric vehicles"""
     def setup(self):
         # model properties
-        self.eletricity_prices = pd.read_csv('testing_hour_prices2.csv', sep=';',decimal = ',')
+        self.eletricity_prices = None
         self.price_memory = [[] for i in range(24)]
         self.average_price_memory = []
         
@@ -45,10 +45,12 @@ class EmtAgentsModel(ap.Model):
                 self.EVs.work_lococation_id[index] = mapped_dest['destination_id'].iloc[0]
                 self.EVs.work_location_name[index] = self.municipalities_data.loc[self.EVs.work_lococation_id[index], 'GM_NAAM']
                 self.EVs.commute_distance[index] = mapped_dest['distance'].iloc[0]
+                self.EVs.travel_time[index] = round(self.EVs.commute_distance[index]/self.p.average_driving_speed) # travel times in 15 minutes units
                 index += 1
 
     def step(self):
-        pass
+        """Call all EV"""
+        self.EVs.step()
     
     def update(self):
         """ Record a dynamic variable. """
