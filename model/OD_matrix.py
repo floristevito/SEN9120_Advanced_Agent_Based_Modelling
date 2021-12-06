@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def generate_OD(g):
+def generate_OD(g, m):
     OD = pd.read_csv("../data/afstand7.csv", sep=";")
     gemeenten = pd.read_csv('../data/gemeenten.csv')
 
@@ -17,7 +17,7 @@ def generate_OD(g):
     OD[['origin_id','destination_id','origin','destination','distance','INW_origin','INW_destination']]
 
 
-    OD['flow'] = OD.apply(lambda row: g * ((row['INW_origin'] * row['INW_destination']) / (row['distance']**2) if row['distance'] != 0 else 0), axis=1)
+    OD['flow'] = OD.apply(lambda row: g * ((row['INW_origin'] * row['INW_destination']) / (row['distance']**m) if row['distance'] != 0 else 0), axis=1)
     #OD = OD.pivot(index='origin_id', columns='destination_id', values='distance')
     OD['sum_flow'] = OD.groupby('origin')['flow'].transform('sum')
     OD['p_flow'] = OD['flow'] / OD['sum_flow'] * 100

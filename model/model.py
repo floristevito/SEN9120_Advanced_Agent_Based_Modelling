@@ -18,7 +18,7 @@ class EmtAgentsModel(ap.Model):
         self.average_price_memory = []
         
         # generate the manicipalities according to data prep file
-        self.OD = generate_OD(self.p.g)
+        self.OD = generate_OD(self.p.g, self.p.m)
         self.municipalities_data = pd.read_csv(
             '../data/gemeenten.csv').set_index('GM_CODE')
         # generate all manucipality agents
