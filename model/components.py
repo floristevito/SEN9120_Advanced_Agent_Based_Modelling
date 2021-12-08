@@ -1,7 +1,7 @@
 import numpy as np
-import math
 import random
 import agentpy as ap
+import logging
 
 """
 All model compontents
@@ -18,10 +18,10 @@ class EV(ap.Agent):
     def setup(self):
         self.charging_speed = random.uniform(
             self.p.charging_speed_min, self.p.charging_speed_max)
-        self.departure_time = random.triangular(
-            self.model.p.l_dep, self.model.p.m_dep, self.model.p.h_dep)
-        self.dwell_time = random.triangular(
-            self.model.p.l_dwell, self.model.p.m_dwell, self.model.p.h_dwell)
+        self.departure_time = int(random.triangular(
+            self.model.p.l_dep, self.model.p.m_dep, self.model.p.h_dep))
+        self.dwell_time = int(random.triangular(
+            self.model.p.l_dwell, self.model.p.m_dwell, self.model.p.h_dwell))
         self.current_location = 'home'
         self.arrival_time_home = None
         self.arrival_time_work = None
@@ -90,7 +90,7 @@ class EV(ap.Agent):
                 else:
                     self.current_battery_volume == self.battery_volume  # set to max
         # determine current battery percentage
-        self.current_battery_percent = (self.current_battery_volume / self.battery_volume) * 100
+        self.battery_percentage = (self.current_battery_volume / self.battery_volume) * 100
 
 
 class Municipality(ap.Agent):

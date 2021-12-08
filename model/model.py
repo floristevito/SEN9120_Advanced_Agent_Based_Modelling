@@ -17,13 +17,13 @@ class EtmEVsModel(ap.Model):
     def setup(self):
         # configure model log
         logging.basicConfig(filename='model.log', filemode='w',
-                            format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+                            format='%(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
         # model properties
         self.eletricity_prices = None
         self.price_memory = [[] for i in range(24)]
         self.average_price_memory = []
-        self.average_battery_percentage = None
+        self.average_battery_percentage = 100
 
         # generate the manicipalities according to data prep file
         self.OD = generate_OD(self.p.g, self.p.m)
@@ -84,6 +84,11 @@ class EtmEVsModel(ap.Model):
         """Call all EV"""
         self.EVs.step()
         self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
+        
+        # debug stats
+        logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
+        logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))
+        logging.debug('time {} EVs at work:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'work'))))
 
     def update(self):
         """ Record a dynamic variable. """
