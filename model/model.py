@@ -23,6 +23,7 @@ class EmtAgentsModel(ap.Model):
         self.eletricity_prices = None
         self.price_memory = [[] for i in range(24)]
         self.average_price_memory = []
+        self.average_battery_percentage = None
 
         # generate the manicipalities according to data prep file
         self.OD = generate_OD(self.p.g, self.p.m)
@@ -82,10 +83,11 @@ class EmtAgentsModel(ap.Model):
     def step(self):
         """Call all EV"""
         self.EVs.step()
+        self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
 
     def update(self):
         """ Record a dynamic variable. """
-        pass
+        self.record('average_battery_percentage')
     
     def end(self):
         """ Repord an evaluation measure. """

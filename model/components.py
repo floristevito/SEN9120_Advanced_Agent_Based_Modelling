@@ -32,6 +32,7 @@ class EV(ap.Agent):
         self.energy_rate = random.triangular(
             self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
         self.current_battery_volume = None
+        self.battery_percentage = 100
 
     def choose_cheapest_hours(self, starting_time, ending_time, charge_needed):
         '''This function will tell you the most economic (cheap) way of getting to a full charge within the time window, if possible
@@ -88,6 +89,8 @@ class EV(ap.Agent):
                     self.current_battery_volume += increase  # charge
                 else:
                     self.current_battery_volume == self.battery_volume  # set to max
+        # determine current battery percentage
+        self.current_battery_percent = (self.current_battery_volume / self.battery_volume) * 100
 
 
 class Municipality(ap.Agent):
