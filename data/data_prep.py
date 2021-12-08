@@ -1,8 +1,14 @@
 import pandas as pd
-import geopandas as gpd
-import osmnx as ox
 
-print("Test")
-G = ox.graph_from_place('Netherlands', network_type='drive', custom_filter='["highway"]')
-print("G loaded")
-ox.save_graphml(G, 'roads.hml')
+
+# https://ev-database.nl/cheatsheet/accu-capaciteit-elektrische-auto
+df = pd.read_html('ev-power.html')
+df = df[0]
+df.columns = ['model', 'kwh']
+df['clean'] = df['kwh'].str.strip('Gemiddelde')
+df['clean'] = df['clean'].str.strip('Kwh')
+df['clean'] = df['clean'].str.strip('kW')
+df['clean'] = df['clean'].str.strip(' ')
+df['clean'] = df['clean'].str.replace(',', '.')
+df['clean'] = df['clean'].astype(float)
+df['clean'].hist()
