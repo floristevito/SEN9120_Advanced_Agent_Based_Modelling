@@ -26,6 +26,7 @@ class EV(ap.Agent):
         self.return_time = self.departure_time + self.dwell_time
         self.battery_volume = random.triangular(self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
         self.energy_rate = random.triangular(self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
+        self.current_battery_volume = None
 
     def choose_cheapest_hours(self, starting_time, ending_time, charge_needed):
         '''This function will tell you the most economic (cheap) way of getting to a full charge within the time window, if possible
@@ -60,6 +61,7 @@ class EV(ap.Agent):
         self.moving = False
 
     def step(self):
+        # determine location and destination
         if (self.model.t % self.departure_time == 0) and (self.current_location == 'home'):
             self.departure_work()
         elif (self.model.t == self.arrival_time_work) and (self.current_location == 'onroad'):
@@ -68,6 +70,11 @@ class EV(ap.Agent):
             self.departure_home()
         elif (self.model.t == self.arrival_time_home) and (self.current_location == 'onroad'):
             self.arrive_home()
+        # battery volume changes
+        if self.current_location == 'onroad':
+            self.current_battery_volume -= self.energy_rate * (self.model.p.average_driving_speed * 0.25)
+        else:
+            self.current_battery_volume += 5
 
 class Municipality(ap.Agent):
     """[summary]

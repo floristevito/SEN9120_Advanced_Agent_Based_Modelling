@@ -5,7 +5,7 @@ parameters = {
     'g': 0.000076,
     'm': 3,
     'percentage_ev': 0.0029,
-    'charging_speed': 10,
+    'charging_speed': 40,
     'l_dep': 20,
     'm_dep': 23,
     'h_dep' : 44,
@@ -16,9 +16,9 @@ parameters = {
     'l_vol': 16.7,
     'm_vol': 59.6,
     'h_vol': 107.8,
-    'l_energy': 104,
-    'm_energy': 192,
-    'h_energy': 281
+    'l_energy': 0.104,
+    'm_energy': 0.192,
+    'h_energy': 0.281
 }
 
 model = EmtAgentsModel(parameters)
