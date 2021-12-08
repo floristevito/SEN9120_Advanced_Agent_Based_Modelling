@@ -24,6 +24,8 @@ class EV(ap.Agent):
         self.arrival_time_work = None
         self.moving = False
         self.return_time = self.departure_time + self.dwell_time
+        self.battery_volume = random.triangular(self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
+        self.energy_rate = random.triangular(self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
 
     def choose_cheapest_hours(self, starting_time, ending_time, charge_needed):
         '''This function will tell you the most economic (cheap) way of getting to a full charge within the time window, if possible
