@@ -1,8 +1,7 @@
 from model import EmtAgentsModel
 
 parameters = {
-    'vehicles': 10,
-    'steps': 10,
+    'steps': 1,
     'g': 0.000076,
     'm': 3,
     'percentage_ev': 0.0029,
@@ -13,7 +12,13 @@ parameters = {
     'l_dwell': 12,
     'm_dwell': 28,
     'h_dwell': 36,
-    'average_driving_speed': 10
+    'average_driving_speed': 10,
+    'l_vol': 16.7,
+    'm_vol': 59.6,
+    'h_vol': 107.8,
+    'l_energy': 104,
+    'm_energy': 192,
+    'h_energy': 281
 }
 
 model = EmtAgentsModel(parameters)
