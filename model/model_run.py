@@ -1,4 +1,4 @@
-from model import EmtAgentsModel
+from model import EtmEVsModel
 
 parameters = {
     'steps': 48 * 4,
@@ -22,6 +22,6 @@ parameters = {
     'h_energy': 0.281
 }
 
-model = EmtAgentsModel(parameters)
+model = EtmEVsModel(parameters)
 print('starting simulation')
 results = model.run()

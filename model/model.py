@@ -11,7 +11,7 @@ Main model block
 """
 
 
-class EmtAgentsModel(ap.Model):
+class EtmEVsModel(ap.Model):
     """Main model that simulates electric vehicles"""
 
     def setup(self):
