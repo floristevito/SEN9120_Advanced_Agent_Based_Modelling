@@ -16,16 +16,21 @@ class EV(ap.Agent):
     """
 
     def setup(self):
-        self.charging_speed = self.p.charging_speed
-        self.departure_time = random.triangular(self.model.p.l_dep,self.model.p.m_dep, self.model.p.h_dep)
-        self.dwell_time = random.triangular(self.model.p.l_dwell, self.model.p.m_dwell, self.model.p.h_dwell)
+        self.charging_speed = random.uniform(
+            self.p.charging_speed_min, self.p.charging_speed_max)
+        self.departure_time = random.triangular(
+            self.model.p.l_dep, self.model.p.m_dep, self.model.p.h_dep)
+        self.dwell_time = random.triangular(
+            self.model.p.l_dwell, self.model.p.m_dwell, self.model.p.h_dwell)
         self.current_location = 'home'
         self.arrival_time_home = None
         self.arrival_time_work = None
         self.moving = False
         self.return_time = self.departure_time + self.dwell_time
-        self.battery_volume = random.triangular(self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
-        self.energy_rate = random.triangular(self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
+        self.battery_volume = random.triangular(
+            self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
+        self.energy_rate = random.triangular(
+            self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
         self.current_battery_volume = None
 
     def choose_cheapest_hours(self, starting_time, ending_time, charge_needed):
@@ -40,22 +45,22 @@ class EV(ap.Agent):
            hours can be set to charging? = true using this
         '''
         pass
-    
+
     def departure_work(self):
         self.current_location = 'onroad'
-        self.moving = True 
+        self.moving = True
         self.arrival_time_work = self.model.t + self.travel_time
-    
+
     def departure_home(self):
         self.current_location = 'onroad'
-        self.moving = True 
+        self.moving = True
         self.arrival_time_home = self.model.t + self.travel_time
-    
+
     def arrive_work(self):
         self.current_location = 'work'
         self.moving = False
         self.return_time = self.model.t + self.dwell_time
-    
+
     def arrive_home(self):
         self.current_location = 'home'
         self.moving = False
@@ -72,9 +77,18 @@ class EV(ap.Agent):
             self.arrive_home()
         # battery volume changes
         if self.current_location == 'onroad':
-            self.current_battery_volume -= self.energy_rate * (self.model.p.average_driving_speed * 0.25)
+            self.current_battery_volume -= self.energy_rate * \
+                (self.model.p.average_driving_speed *
+                 0.25)  # energy consumption per 15min
         else:
-            self.current_battery_volume += 5
+            if self.current_battery_volume < self.battery_volume:
+                increase = self.charging_speed * 0.25  # potential battery increase in 15min
+                # check if potential increase does not exceed battery volume
+                if self.current_battery_volume + increase < self.battery_volume:
+                    self.current_battery_volume += increase  # charge
+                else:
+                    self.current_battery_volume == self.battery_volume  # set to max
+
 
 class Municipality(ap.Agent):
     """[summary]
@@ -82,6 +96,7 @@ class Municipality(ap.Agent):
     Args:
         ap ([type]): [description]
     """
+
     def setup(self):
         self.name = None
         self.OD = None
