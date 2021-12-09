@@ -48,9 +48,10 @@ class EV(ap.Agent):
         pass
 
     def departure_work(self):
-        self.current_location = 'onroad'
-        self.moving = True
-        self.arrival_time_work = self.model.t + self.travel_time
+        self.current_location = 'onroad' # go onroad
+        self.moving = True 
+        self.arrival_time_work = self.model.t + self.travel_time # ETA
+        self.departure_time += 96 # update departure time
 
     def departure_home(self):
         self.current_location = 'onroad'
@@ -87,6 +88,7 @@ class EV(ap.Agent):
                 # check if potential increase does not exceed battery volume
                 if self.current_battery_volume + increase < self.battery_volume:
                     self.current_battery_volume += increase  # charge
+                    logging.debug('charging')
                 else:
                     self.current_battery_volume == self.battery_volume  # set to max
         # determine current battery percentage
