@@ -69,7 +69,7 @@ class EV(ap.Agent):
         self.moving = False
 
     def step(self):
-        # determine location and destination
+        # move, determine location and destination
         if (self.model.t % self.departure_time == 0) and (self.current_location == 'home'):
             if self.current_battery_volume >= self.energy_required: 
                 self.departure_work()
@@ -86,6 +86,7 @@ class EV(ap.Agent):
                 self.return_time += 1
         elif (self.model.t == self.arrival_time_home) and (self.current_location == 'onroad'):
             self.arrive_home()
+        
         # battery volume changes
         if self.current_location == 'onroad':
             self.current_battery_volume -= self.energy_rate * \
@@ -99,7 +100,7 @@ class EV(ap.Agent):
                     self.current_battery_volume += increase  # charge
                     logging.debug('charging')
                 else:
-                    self.current_battery_volume == self.battery_volume  # set to max
+                    self.current_battery_volume = self.battery_volume  # set to max
         # determine current battery percentage
         self.battery_percentage = (self.current_battery_volume / self.battery_volume) * 100
 

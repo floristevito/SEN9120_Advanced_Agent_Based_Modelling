@@ -1,10 +1,10 @@
 from model import EtmEVsModel
 
 parameters = {
-    'steps': 96 * 62,
+    'steps': 96 * 5,
     'g': 0.000076,
     'm': 3,
-    'percentage_ev': 0.0000029,
+    'percentage_ev': 0.0029,
     'charging_speed_min': 20,
     'charging_speed_max': 60,
     'l_dep': 20,
@@ -25,3 +25,4 @@ parameters = {
 model = EtmEVsModel(parameters)
 print('starting simulation')
 results = model.run()
+results.variables.EtmEVsModel.plot()
