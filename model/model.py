@@ -20,9 +20,10 @@ class EtmEVsModel(ap.Model):
                             format='%(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
         # model properties
-        self.eletricity_prices = None
-        self.price_memory = [[] for i in range(24)]
+        self.price_memory = [[0] for i in range(96)]
         self.average_price_memory = []
+        self.Electricity_price = pd.read_csv(
+            '../data/prizes_electricity_365_days_per_15_minutes.csv')
         self.average_battery_percentage = 100
 
         # generate the manicipalities according to data prep file
@@ -85,6 +86,8 @@ class EtmEVsModel(ap.Model):
         """Call all EV"""
         self.EVs.step()
         self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
+        self.fill_memory()
+        self.average_memory()
         # debug stats
         logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
         logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))
@@ -98,8 +101,21 @@ class EtmEVsModel(ap.Model):
         """ Repord an evaluation measure. """
         pass
 
-    def fill_memory_EVs(self):
+    def fill_memory(self):
         '''
-        Fills the memory of agents with the previous prices and calculates average
+        Fills the memory of agents with the previous prices
+        
+        SHOULD BE DONE ON SUPERCLASS LEVEL TO SAVE DATA AND COMPUTATIONS
+        
         '''
-        pass
+        
+        self.price_memory[(self.t %96)].append(round(self.Electricity_price['electricity_price'][self.t],2))
+        
+    def average_memory(self):
+        '''
+        From self.price_memory creates avarage prices for a 24h cycle
+        
+        Could be expanded to a 4*24h cycle if wanted
+        
+        '''
+        self.average_price_memory = [round(np.mean(self.price_memory[i]),2) for i in range(len(self.price_memory))]

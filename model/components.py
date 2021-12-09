@@ -35,18 +35,35 @@ class EV(ap.Agent):
         self.battery_percentage = 100
         self.energy_required = None
 
-    def choose_cheapest_hours(self, starting_time, ending_time, charge_needed):
+
+
+
+    def choose_cheapest_timesteps(self,starting_time,ending_time,charge_needed):
         '''This function will tell you the most economic (cheap) way of getting to a full charge within the time window, if possible
            The start and end time are ticks of 1 hour atm
            Charge needed still abstract/dimensionless, the amount of energy the car needs e.g. full or like 75% idc
-
-
+           
+           
            Function use:
-           input starting and ending time of charge
+           input starting and ending time of charge 
            function outputs cheapest predicted hours (ticks count of hour)
            hours can be set to charging? = true using this
         '''
-        pass
+        if starting_time%96 < ending_time%96:
+            total_time_window = self.model.average_price_memory[starting_time%96:ending_time%96] #e.g. charging from 1AM to 3PM is from 1:00 - 3:00
+        else:
+            total_time_window = self.model.average_price_memory[starting_time%96:] + self.model.average_price_memory[:ending_time%96]
+        timesteps_needed = math.ceil(charge_needed/self.charging_speed)
+        if timesteps_needed > (abs(ending_time-starting_time)):
+            print('total time is insufficient to charge to full. Charging commencing immediately')
+            return starting_time
+
+        timewindow_copy = total_time_window.copy()
+        timewindow_copy.sort()
+        cheapest_values = timewindow_copy[:timesteps_needed]
+        cheapest_starting_timesteps = [total_time_window.index(i) + starting_time for i in cheapest_values]
+
+        print('the cheapest hour to start are hours {} with a total value of {}'.format(cheapest_starting_timesteps,cheapest_values))
 
     def departure_work(self):
         self.current_location = 'onroad' # go onroad
