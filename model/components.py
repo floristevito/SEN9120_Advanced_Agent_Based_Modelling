@@ -2,12 +2,11 @@ import numpy as np
 import random
 import agentpy as ap
 import logging
+import math
 
 """
 All model compontents
 """
-
-
 class EV(ap.Agent):
     """[summary]
 
@@ -34,8 +33,8 @@ class EV(ap.Agent):
         self.current_battery_volume = None
         self.battery_percentage = 100
         self.energy_required = None
-
-
+        self.smart = random.random() < self.model.p.p_smart
+        self.cheapest_timesteps = []
 
 
     def choose_cheapest_timesteps(self,starting_time,ending_time,charge_needed):
@@ -55,15 +54,14 @@ class EV(ap.Agent):
             total_time_window = self.model.average_price_memory[starting_time%96:] + self.model.average_price_memory[:ending_time%96]
         timesteps_needed = math.ceil(charge_needed/self.charging_speed)
         if timesteps_needed > (abs(ending_time-starting_time)):
-            print('total time is insufficient to charge to full. Charging commencing immediately')
-            return starting_time
-
-        timewindow_copy = total_time_window.copy()
-        timewindow_copy.sort()
-        cheapest_values = timewindow_copy[:timesteps_needed]
-        cheapest_starting_timesteps = [total_time_window.index(i) + starting_time for i in cheapest_values]
-
-        print('the cheapest hour to start are hours {} with a total value of {}'.format(cheapest_starting_timesteps,cheapest_values))
+            # charge all the available times
+            self.cheapest_timesteps = [i for i in range(starting_time,ending_time)]
+        else:
+            # give all indexes + starting_time that are cheapest
+            timewindow = np.array(total_time_window.copy())
+            idx = np.argpartition(timewindow, timesteps_needed)
+            cheapest_timesteps = idx[:timesteps_needed].tolist()
+            self.cheapest_timesteps = [i + starting_time for i in cheapest_timesteps]
 
     def departure_work(self):
         self.current_location = 'onroad' # go onroad
@@ -80,10 +78,23 @@ class EV(ap.Agent):
         self.current_location = 'work'
         self.moving = False
         self.return_time = self.model.t + self.dwell_time
+        if self.smart:
+            self.choose_cheapest_timesteps(self.model.t, self.return_time, (max(0, self.energy_required - self.current_battery_volume)))
 
     def arrive_home(self):
         self.current_location = 'home'
         self.moving = False
+        if self.smart:
+            self.choose_cheapest_timesteps(self.model.t, self.departure_time, (100 - self.current_battery_volume))
+    
+    def charge(self):
+        if self.current_battery_volume < self.battery_volume:
+                increase = self.charging_speed * 0.25  # potential battery increase in 15min
+                # check if potential increase does not exceed battery volume
+                if self.current_battery_volume + increase < self.battery_volume:
+                    self.current_battery_volume += increase  # charge
+                else:
+                    self.current_battery_volume = self.battery_volume  # set to max
 
     def step(self):
         # move, determine location and destination
@@ -104,20 +115,21 @@ class EV(ap.Agent):
         elif (self.model.t == self.arrival_time_home) and (self.current_location == 'onroad'):
             self.arrive_home()
         
-        # battery volume changes
+        # energy usage when on road
         if self.current_location == 'onroad':
+            logging.debug('DISCHARGE')
             self.current_battery_volume -= self.energy_rate * \
                 (self.model.p.average_driving_speed *
                  0.25)  # energy consumption per 15min
+        # charging
         else:
-            if self.current_battery_volume < self.battery_volume:
-                increase = self.charging_speed * 0.25  # potential battery increase in 15min
-                # check if potential increase does not exceed battery volume
-                if self.current_battery_volume + increase < self.battery_volume:
-                    self.current_battery_volume += increase  # charge
-                    logging.debug('charging')
-                else:
-                    self.current_battery_volume = self.battery_volume  # set to max
+            if self.smart:
+                if any(i % self.model.t == 0 for i in self.cheapest_timesteps):
+                    self.charge() # only charge on smart times
+                    logging.debug('smart charging')
+            else:
+                self.charge() # just go ahead and charge
+                logging.debug('not smart charging')
         # determine current battery percentage
         self.battery_percentage = (self.current_battery_volume / self.battery_volume) * 100
 

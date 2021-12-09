@@ -109,7 +109,7 @@ class EtmEVsModel(ap.Model):
         
         '''
         
-        self.price_memory[(self.t %96)].append(round(self.Electricity_price['electricity_price'][self.t],2))
+        self.price_memory[(self.t %96)].append(round(self.Electricity_price['Electricity_price'][self.t],2))
         
     def average_memory(self):
         '''
