@@ -54,16 +54,17 @@ class EtmEVsModel(ap.Model):
                 self.EVs.work_location_name[index] = self.municipalities_data.loc[self.EVs.work_lococation_id[index], 'GM_NAAM']
                 self.EVs.commute_distance[index] = mapped_dest['distance'].iloc[0]
                 # travel times in 15 minutes units
-                self.EVs.travel_time[index] = round(
-                    self.EVs.commute_distance[index]/self.p.average_driving_speed)
+                self.EVs.travel_time[index] = max(1, round(
+                    self.EVs.commute_distance[index]/self.p.average_driving_speed)) # give at least 1 time step
+                # give a enery required for trip memory
+                self.EVs.energy_required[index] = self.EVs.energy_rate[index] * self.EVs.commute_distance[index]
                 # check if maximum battery volume in model is enough to reach destination, if not, give the value needed to reach destination
-                if self.model.p.h_vol < self.EVs.energy_rate[index] * self.EVs.commute_distance[index]:
-                    self.EVs.battery_volume[index] = self.EVs.energy_rate[index] * \
-                        self.EVs.commute_distance[index]
+                if self.model.p.h_vol < self.EVs.energy_required[index]:
+                    self.EVs.battery_volume[index] = self.EVs.energy_required[index]
                     logging.warning(
                         'vehicle created with extended volume outside max volume range')
                 # check if battery volume is enough to reach destination, if not get a different value from distribution
-                while self.EVs.battery_volume[index] < self.EVs.energy_rate[index] * self.EVs.commute_distance[index]:
+                while self.EVs.battery_volume[index] < self.EVs.energy_required[index]:
                     self.EVs.battery_volume[index] = random.triangular(
                         self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
                 # set current volume to final max volume
@@ -84,7 +85,6 @@ class EtmEVsModel(ap.Model):
         """Call all EV"""
         self.EVs.step()
         self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
-        
         # debug stats
         logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
         logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))

@@ -33,6 +33,7 @@ class EV(ap.Agent):
             self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
         self.current_battery_volume = None
         self.battery_percentage = 100
+        self.energy_required = None
 
     def choose_cheapest_hours(self, starting_time, ending_time, charge_needed):
         '''This function will tell you the most economic (cheap) way of getting to a full charge within the time window, if possible
@@ -70,11 +71,19 @@ class EV(ap.Agent):
     def step(self):
         # determine location and destination
         if (self.model.t % self.departure_time == 0) and (self.current_location == 'home'):
-            self.departure_work()
+            if self.current_battery_volume >= self.energy_required: 
+                self.departure_work()
+            else:
+                logging.debug('charge too low to go in morning, should not happen')
         elif (self.model.t == self.arrival_time_work) and (self.current_location == 'onroad'):
             self.arrive_work()
         elif (self.model.t % self.return_time == 0) and (self.current_location == 'work'):
-            self.departure_home()
+            # check if enough charge, else wait at work
+            if self.current_battery_volume >= self.energy_required: 
+                self.departure_home()
+            else:
+                # if not enough charge, wait untill enough charge is available
+                self.return_time += 1
         elif (self.model.t == self.arrival_time_home) and (self.current_location == 'onroad'):
             self.arrive_home()
         # battery volume changes
