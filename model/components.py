@@ -21,6 +21,7 @@ class EV(ap.Agent):
             self.model.p.l_dep, self.model.p.m_dep, self.model.p.h_dep))
         self.dwell_time = int(random.triangular(
             self.model.p.l_dwell, self.model.p.m_dwell, self.model.p.h_dwell))
+        self.offset = round(random.uniform(-2,2), 0)
         self.current_location = 'home'
         self.arrival_time_home = None
         self.arrival_time_work = None
@@ -67,25 +68,25 @@ class EV(ap.Agent):
         self.current_location = 'onroad' # go onroad
         self.moving = True 
         self.arrival_time_work = self.model.t + self.travel_time # ETA
-        self.departure_time += 96 # update departure time
+        self.departure_time += 96  # update departure time
 
     def departure_home(self):
         self.current_location = 'onroad'
         self.moving = True
-        self.arrival_time_home = self.model.t + self.travel_time
+        self.arrival_time_home = self.model.t + self.travel_time 
 
     def arrive_work(self):
         self.current_location = 'work'
         self.moving = False
         self.return_time = self.model.t + self.dwell_time
         if self.smart:
-            self.choose_cheapest_timesteps(self.model.t, self.return_time, (max(0, self.energy_required - self.current_battery_volume)))
+            self.choose_cheapest_timesteps(self.model.t, self.return_time + self.offset, (max(0, self.energy_required - self.current_battery_volume)))
 
     def arrive_home(self):
         self.current_location = 'home'
         self.moving = False
         if self.smart:
-            self.choose_cheapest_timesteps(self.model.t, self.departure_time, (100 - self.current_battery_volume))
+            self.choose_cheapest_timesteps(self.model.t, self.departure_time + self.offset, (100 - self.current_battery_volume))
     
     def charge(self):
         if self.current_battery_volume < self.battery_volume:
@@ -98,11 +99,12 @@ class EV(ap.Agent):
 
     def step(self):
         # move, determine location and destination
-        if (self.model.t % self.departure_time == 0) and (self.current_location == 'home'):
+        if (self.model.t % (self.departure_time + self.offset) == 0) and (self.current_location == 'home'):
             if self.current_battery_volume >= self.energy_required: 
                 self.departure_work()
             else:
-                logging.debug('charge too low to go in morning, should not happen')
+                logging.warning('charge too low to go in morning, should not happen')
+            
         elif (self.model.t == self.arrival_time_work) and (self.current_location == 'onroad'):
             self.arrive_work()
         elif (self.model.t % self.return_time == 0) and (self.current_location == 'work'):
@@ -114,6 +116,7 @@ class EV(ap.Agent):
                 self.return_time += 1
         elif (self.model.t == self.arrival_time_home) and (self.current_location == 'onroad'):
             self.arrive_home()
+            self.offset = round(random.uniform(-2,2),0) # Offset for the next day
         
         # energy usage when on road
         if self.current_location == 'onroad':
@@ -130,6 +133,7 @@ class EV(ap.Agent):
             else:
                 self.charge() # just go ahead and charge
                 logging.debug('not smart charging')
+                
         # determine current battery percentage
         self.battery_percentage = (self.current_battery_volume / self.battery_volume) * 100
 

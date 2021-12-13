@@ -1,7 +1,7 @@
 from model import EtmEVsModel
 
 parameters = {
-    'steps': 96 * 14,
+    'steps': 96 * 31,
     'g': 0.000076,
     'm': 3,
     'percentage_ev': 0.000029,
@@ -20,7 +20,7 @@ parameters = {
     'l_energy': 0.104,
     'm_energy': 0.192,
     'h_energy': 0.281,
-    'p_smart': 0.5,
+    'p_smart': 0,
 }
 
 model = EtmEVsModel(parameters)
