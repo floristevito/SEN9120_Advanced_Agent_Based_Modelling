@@ -1,7 +1,7 @@
 from model import EtmEVsModel
 
 parameters = {
-    'steps': 96 * 31,
+    'steps': 96 * 7,
     'g': 0.000076,
     'm': 3,
     'percentage_ev': 0.000029,
@@ -10,9 +10,11 @@ parameters = {
     'l_dep': 20,
     'm_dep': 23,
     'h_dep': 44,
+    'offset_dep': 2,
     'l_dwell': 12,
     'm_dwell': 28,
     'h_dwell': 36,
+    'offset_dwell': 3,
     'average_driving_speed': 10,
     'l_vol': 16.7,
     'm_vol': 59.6,
