@@ -1,10 +1,10 @@
 from model import EtmEVsModel
 
 parameters = {
-    'steps': 96 * 7,
+    'steps': 96 * 4,
     'g': 0.000076,
     'm': 3,
-    'percentage_ev': 0.000029,
+    'percentage_ev': 0.00029,
     'charging_speed_min': 20,
     'charging_speed_max': 60,
     'l_dep': 20,

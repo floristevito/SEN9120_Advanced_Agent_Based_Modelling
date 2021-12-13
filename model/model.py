@@ -25,6 +25,7 @@ class EtmEVsModel(ap.Model):
         self.Electricity_price = pd.read_csv(
             '../data/prizes_electricity_365_days_per_15_minutes.csv')
         self.average_battery_percentage = 100
+        self.total_current_power_demand = None
 
         # generate the manicipalities according to data prep file
         self.OD = generate_OD(self.p.g, self.p.m)
@@ -84,10 +85,11 @@ class EtmEVsModel(ap.Model):
 
     def step(self):
         """Call all EV"""
-        self.EVs.step()
-        self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
         self.fill_history()
         self.calc_ma_price_history()
+        self.EVs.step()
+        self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
+        self.total_current_power_demand = np.sum(list(self.EVs.current_power_demand))
         # debug stats
         logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
         logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))
@@ -96,6 +98,7 @@ class EtmEVsModel(ap.Model):
     def update(self):
         """ Record a dynamic variable. """
         self.record('average_battery_percentage')
+        self.record('total_current_power_demand')
     
     def end(self):
         """ Repord an evaluation measure. """

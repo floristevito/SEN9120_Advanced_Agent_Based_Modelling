@@ -27,6 +27,7 @@ class EV(ap.Agent):
         self.arrival_time_home = None
         self.arrival_time_work = None
         self.moving = False
+        self.charging = False
         self.return_time = self.departure_time + self.dwell_time
         self.battery_volume = random.triangular(
             self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
@@ -37,6 +38,7 @@ class EV(ap.Agent):
         self.energy_required = None
         self.smart = random.random() < self.model.p.p_smart
         self.cheapest_timesteps = []
+        self.current_power_demand = None
 
 
     def choose_cheapest_timesteps(self,starting_time,ending_time,charge_needed):
@@ -67,13 +69,15 @@ class EV(ap.Agent):
 
     def departure_work(self):
         self.current_location = 'onroad' # go onroad
-        self.moving = True 
+        self.moving = True
+        self.charging = False 
         self.arrival_time_work = self.model.t + self.travel_time # ETA
         self.departure_time += 96  # update departure time
 
     def departure_home(self):
         self.current_location = 'onroad'
         self.moving = True
+        self.charging = False
         self.arrival_time_home = self.model.t + self.travel_time 
 
     def arrive_work(self):
@@ -92,6 +96,7 @@ class EV(ap.Agent):
     def charge(self):
         if self.current_battery_volume < self.battery_volume:
                 increase = self.charging_speed * 0.25  # potential battery increase in 15min
+                self.charging = True
                 # check if potential increase does not exceed battery volume
                 if self.current_battery_volume + increase < self.battery_volume:
                     self.current_battery_volume += increase  # charge
@@ -123,12 +128,14 @@ class EV(ap.Agent):
         
         # energy usage when on road
         if self.current_location == 'onroad':
+            self.charging = False
             logging.debug('DISCHARGE')
             self.current_battery_volume -= self.energy_rate * \
                 (self.model.p.average_driving_speed *
                  0.25)  # energy consumption per 15min
         # charging
         else:
+            self.charging = False
             if self.smart:
                 if any(i % self.model.t == 0 for i in self.cheapest_timesteps):
                     self.charge() # only charge on smart times
@@ -139,6 +146,12 @@ class EV(ap.Agent):
                 
         # determine current battery percentage
         self.battery_percentage = (self.current_battery_volume / self.battery_volume) * 100
+
+        #determine current power demand
+        if self.charging:
+            self.current_power_demand = self.charging_speed * 0.25
+        else:
+            self.current_power_demand = 0
 
 
 class Municipality(ap.Agent):
