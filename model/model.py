@@ -87,7 +87,7 @@ class EtmEVsModel(ap.Model):
         self.EVs.step()
         self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
         self.fill_history()
-        self.ma_price_history()
+        self.calc_ma_price_history()
         # debug stats
         logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
         logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))
@@ -109,19 +109,33 @@ class EtmEVsModel(ap.Model):
         
         '''
         
-        self.price_history[(self.t %96)].append(round(self.Electricity_price['Electricity_price'][self.t],2))
+        self.price_history[(self.t %96)-1].append(round(self.Electricity_price['Electricity_price'][self.t],2))
         
-    def ma_price_history(self):
+    def calc_ma_price_history(self):
         '''
         From self.price_history creates avarage prices for a 24h cycle
         
         Could be expanded to a 4*24h cycle if wanted
         
         '''
-        selected_hist = 
+        self.ma_price_history.clear()
+        for i in self.price_history:
+            segment = i[max(-7,-len(i)):]
+            logging.debug('time {} segment {}'.format(self.model.t, segment))
+            self.ma_price_history.append(round(np.mean(segment),2))
+        logging.debug('time {} ma_price_history {}'.format(self.model.t, self.ma_price_history))
+        
+        
+        
+        
+        
+        
+        
+        
+        #selected_hist = 
         
         # calculate average price as average
-        average = [round(np.mean(self.price_history[i]),2) for i in range(len(self.price_history))]
+        #average = [round(np.mean(self.price_history[i]),2) for i in range(len(self.price_history))]
         
         # determine moving average
-        self.ma_price_history = 
+        #self.ma_price_history = 
