@@ -49,9 +49,9 @@ class EV(ap.Agent):
            hours can be set to charging? = true using this
         '''
         if starting_time%96 < ending_time%96:
-            total_time_window = self.model.average_price_memory[starting_time%96:ending_time%96] #e.g. charging from 1AM to 3PM is from 1:00 - 3:00
+            total_time_window = self.model.ma_price_history[starting_time%96:ending_time%96] #e.g. charging from 1AM to 3PM is from 1:00 - 3:00
         else:
-            total_time_window = self.model.average_price_memory[starting_time%96:] + self.model.average_price_memory[:ending_time%96]
+            total_time_window = self.model.ma_price_history[starting_time%96:] + self.model.ma_price_history[:ending_time%96]
         timesteps_needed = math.ceil(charge_needed/self.charging_speed)
         if timesteps_needed > (abs(ending_time-starting_time)):
             # charge all the available times

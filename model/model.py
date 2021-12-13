@@ -20,8 +20,8 @@ class EtmEVsModel(ap.Model):
                             format='%(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
         # model properties
-        self.price_memory = [[0] for i in range(96)]
-        self.average_price_memory = []
+        self.price_history = [[0] for i in range(96)]
+        self.ma_price_history = []
         self.Electricity_price = pd.read_csv(
             '../data/prizes_electricity_365_days_per_15_minutes.csv')
         self.average_battery_percentage = 100
@@ -86,8 +86,8 @@ class EtmEVsModel(ap.Model):
         """Call all EV"""
         self.EVs.step()
         self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
-        self.fill_memory()
-        self.average_memory()
+        self.fill_history()
+        self.ma_price_history()
         # debug stats
         logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
         logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))
@@ -101,7 +101,7 @@ class EtmEVsModel(ap.Model):
         """ Repord an evaluation measure. """
         pass
 
-    def fill_memory(self):
+    def fill_history(self):
         '''
         Fills the memory of agents with the previous prices
         
@@ -109,13 +109,19 @@ class EtmEVsModel(ap.Model):
         
         '''
         
-        self.price_memory[(self.t %96)].append(round(self.Electricity_price['Electricity_price'][self.t],2))
+        self.price_history[(self.t %96)].append(round(self.Electricity_price['Electricity_price'][self.t],2))
         
-    def average_memory(self):
+    def ma_price_history(self):
         '''
-        From self.price_memory creates avarage prices for a 24h cycle
+        From self.price_history creates avarage prices for a 24h cycle
         
         Could be expanded to a 4*24h cycle if wanted
         
         '''
-        self.average_price_memory = [round(np.mean(self.price_memory[i]),2) for i in range(len(self.price_memory))]
+        selected_hist = 
+        
+        # calculate average price as average
+        average = [round(np.mean(self.price_history[i]),2) for i in range(len(self.price_history))]
+        
+        # determine moving average
+        self.ma_price_history = 
