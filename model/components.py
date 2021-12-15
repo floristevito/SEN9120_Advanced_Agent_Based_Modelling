@@ -182,7 +182,7 @@ class EV(ap.Agent):
                     self.VTG_capacity = self.charging_speed * 0.25
             
 
-            # extra VTG_capacity = max(min(VTG_percentage*self.battery_volume, amount of charge to reach lower bound, amount of charge to reach latest 
+            # extra VTG_capacity = max(min(VTG_percentage*self.battery_volume, amount of VTG-discharging to reach lower bound, amount of VTG-discharging to reach latest 
             #                              charging bound),0)
             # lower bound = lb
             # latest charging bound = lcb
