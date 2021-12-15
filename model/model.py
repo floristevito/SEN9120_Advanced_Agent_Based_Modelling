@@ -26,6 +26,7 @@ class EtmEVsModel(ap.Model):
             '../data/prizes_electricity_365_days_per_15_minutes.csv')
         self.average_battery_percentage = 100
         self.total_current_power_demand = None
+        self.total_VTG_capacity = None
 
         # generate the manicipalities according to data prep file
         self.OD = generate_OD(self.p.g, self.p.m)
@@ -49,6 +50,7 @@ class EtmEVsModel(ap.Model):
         # give the right properties to every EV according to the data prep file
         for mun in self.municipalities:
             for ev in range(mun.number_EVs):
+                #set home location
                 self.EVs.home_location[index] = mun.name
                 # pick destination, higher p_flow gives higher chance to be picked
                 mapped_dest = mun.OD.sample(1, weights='p_flow')
@@ -71,6 +73,9 @@ class EtmEVsModel(ap.Model):
                         self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
                 # set current volume to final max volume
                 self.EVs.current_battery_volume[index] = self.EVs.battery_volume[index]
+                # set VTG percentage
+                self.EVs.allowed_VTG_percentage = self.model.p.VTG_percentage
+
                 index += 1
 
         # push some stats to log file
@@ -90,6 +95,7 @@ class EtmEVsModel(ap.Model):
         self.EVs.step()
         self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
         self.total_current_power_demand = np.sum(list(self.EVs.current_power_demand))
+        self.total_VTG_capacity = np.sum(list(self.EVs.VTG_capacity))
         # debug stats
         logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
         logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))
@@ -97,8 +103,9 @@ class EtmEVsModel(ap.Model):
 
     def update(self):
         """ Record a dynamic variable. """
-        self.record('average_battery_percentage')
-        self.record('total_current_power_demand')
+        #self.record('average_battery_percentage')
+        #self.record('total_current_power_demand')
+        self.record('total_VTG_capacity')
     
     def end(self):
         """ Repord an evaluation measure. """
