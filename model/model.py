@@ -103,8 +103,8 @@ class EtmEVsModel(ap.Model):
 
     def update(self):
         """ Record a dynamic variable. """
-        #self.record('average_battery_percentage')
-        #self.record('total_current_power_demand')
+        self.record('average_battery_percentage')
+        self.record('total_current_power_demand')
         self.record('total_VTG_capacity')
     
     def end(self):
