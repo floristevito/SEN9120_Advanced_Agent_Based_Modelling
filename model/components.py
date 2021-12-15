@@ -190,9 +190,8 @@ class EV(ap.Agent):
             Intersection_Xcor_lcb = 0.5*(self.time_charging_must_finish + self.model.t) + ((2 / self.charging_speed) * (self.current_battery_volume - self.needed_battery_level_at_charging_end))
             Intersection_Ycor_lcb = 0.25*self.charging_speed * (-Intersection_Xcor_lcb + self.model.t) + self.current_battery_volume
             
-            distance_lb = math.sqrt((self.current_battery_volume-self.battery_level_at_charging_start)**2 + \
-                ((-4/self.charging_speed)*(self.battery_level_at_charging_start-self.current_battery_volume)**2))
-            distance_lcb = math.sqrt((self.current_battery_volume-Intersection_Ycor_lcb)**2 + (Intersection_Xcor_lcb-self.model.t)**2)
+            distance_lb = self.current_battery_volume-self.battery_level_at_charging_start
+            distance_lcb = self.current_battery_volume-Intersection_Ycor_lcb
 
             self.VTG_capacity += max(min(distance_lb,distance_lcb,self.allowed_VTG_percentage*self.battery_volume),0)
 

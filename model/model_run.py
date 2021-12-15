@@ -1,7 +1,7 @@
 from model import EtmEVsModel
 
 parameters = {
-    'steps': 96 * 2,
+    'steps': 96 * 1,
     'g': 0.000076,
     'm': 3,
     'percentage_ev': 0.00029,
