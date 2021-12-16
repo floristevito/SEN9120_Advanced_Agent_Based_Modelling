@@ -53,7 +53,7 @@ class EtmEVsModel(ap.Model):
                 #set home location
                 self.EVs.home_location[index] = mun.name
                 # pick destination, higher p_flow gives higher chance to be picked
-                mapped_dest = mun.OD.sample(1, weights='p_flow')
+                mapped_dest = mun.OD.sample(1, weights='p_flow', random_state=self.p.seed)
                 self.EVs.work_lococation_id[index] = mapped_dest['destination_id'].iloc[0]
                 self.EVs.work_location_name[index] = self.municipalities_data.loc[self.EVs.work_lococation_id[index], 'GM_NAAM']
                 self.EVs.commute_distance[index] = mapped_dest['distance'].iloc[0]

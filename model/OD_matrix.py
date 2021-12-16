@@ -24,7 +24,6 @@ def generate_OD(g, m):
     OD = dict(tuple(OD[['origin_id','destination_id','p_flow', 'distance']].groupby('origin_id')))
     for key, index in OD.items():
         index.drop('origin_id', axis=1, inplace=True)
-    
     return OD
 
 
