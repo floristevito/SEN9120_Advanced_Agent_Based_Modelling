@@ -24,7 +24,7 @@ parameters = {
     'm_energy': 0.192,
     'h_energy': 0.281,
     'p_smart': 0,
-    'seed': 41,
+    'seed': 4,
 }
 
 model = EtmEVsModel(parameters)
