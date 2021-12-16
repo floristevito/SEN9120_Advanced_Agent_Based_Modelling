@@ -69,7 +69,7 @@ class EtmEVsModel(ap.Model):
                         'vehicle created with extended volume outside max volume range')
                 # check if battery volume is enough to reach destination, if not get a different value from distribution
                 while self.EVs.battery_volume[index] < self.EVs.energy_required[index]:
-                    self.EVs.battery_volume[index] = random.triangular(
+                    self.EVs.battery_volume[index] = self.random.triangular(
                         self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
                 # set current volume to final max volume
                 self.EVs.current_battery_volume[index] = self.EVs.battery_volume[index]
@@ -103,7 +103,7 @@ class EtmEVsModel(ap.Model):
 
     def update(self):
         """ Record a dynamic variable. """
-        #self.record('average_battery_percentage')
+        self.record('average_battery_percentage')
         self.record('total_current_power_demand')
         self.record('total_VTG_capacity')
     
@@ -131,21 +131,4 @@ class EtmEVsModel(ap.Model):
         self.ma_price_history.clear()
         for i in self.price_history:
             segment = i[max(-7,-len(i)):]
-            logging.debug('time {} segment {}'.format(self.model.t, segment))
             self.ma_price_history.append(round(np.mean(segment),2))
-        logging.debug('time {} ma_price_history {}'.format(self.model.t, self.ma_price_history))
-        
-        
-        
-        
-        
-        
-        
-        
-        #selected_hist = 
-        
-        # calculate average price as average
-        #average = [round(np.mean(self.price_history[i]),2) for i in range(len(self.price_history))]
-        
-        # determine moving average
-        #self.ma_price_history = 

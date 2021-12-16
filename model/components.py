@@ -1,5 +1,4 @@
-import numpy as np
-import random
+import numpy as np 
 import agentpy as ap
 import logging
 import math
@@ -15,28 +14,28 @@ class EV(ap.Agent):
     """
 
     def setup(self):
-        self.charging_speed = random.uniform(
+        self.charging_speed = self.model.random.uniform(
             self.p.charging_speed_min, self.p.charging_speed_max)
-        self.departure_time = int(random.triangular(
+        self.departure_time = int(self.model.random.triangular(
             self.model.p.l_dep, self.model.p.m_dep, self.model.p.h_dep))
-        self.dwell_time = int(random.triangular(
+        self.dwell_time = int(self.model.random.triangular(
             self.model.p.l_dwell, self.model.p.m_dwell, self.model.p.h_dwell))
-        self.offset_dep = int(random.uniform(-self.model.p.offset_dep,self.model.p.offset_dep))
-        self.offset_dwell = int(random.uniform(-self.model.p.offset_dwell, self.model.p.offset_dwell))
+        self.offset_dep = int(self.model.random.uniform(-self.model.p.offset_dep,self.model.p.offset_dep))
+        self.offset_dwell = int(self.model.random.uniform(-self.model.p.offset_dwell, self.model.p.offset_dwell))
         self.current_location = 'home'
         self.arrival_time_home = None
         self.arrival_time_work = None
         self.moving = False
         self.charging = None
         self.return_time = self.departure_time + self.dwell_time
-        self.battery_volume = random.triangular(
+        self.battery_volume = self.model.random.triangular(
             self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
-        self.energy_rate = random.triangular(
+        self.energy_rate = self.model.random.triangular(
             self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
         self.current_battery_volume = None
         self.battery_percentage = 100
         self.energy_required = None
-        self.smart = random.random() < self.model.p.p_smart
+        self.smart = self.model.random.random() < self.model.p.p_smart
         self.cheapest_timesteps = []
         self.current_power_demand = None
         self.battery_level_at_charging_start = None
@@ -142,14 +141,14 @@ class EV(ap.Agent):
                 self.return_time += 1
         elif (self.model.t == self.arrival_time_home) and (self.current_location == 'onroad'):
             self.arrive_home()
-            self.offset_dep = int(random.uniform(-self.model.p.offset_dep,self.model.p.offset_dep)) # Offset for the next day
-            self.offset_dwell = int(random.uniform(-self.model.p.offset_dwell, self.model.p.offset_dwell)) # Offset for the next day
+            self.offset_dep = int(self.model.random.uniform(-self.model.p.offset_dep,self.model.p.offset_dep)) # Offset for the next day
+            self.offset_dwell = int(self.model.random.uniform(-self.model.p.offset_dwell, self.model.p.offset_dwell)) # Offset for the next day
             logging.debug('{} a new departure offset has been caculated {}'.format(self.model.t, self.offset_dep))
         
         # energy usage when on road
         if self.current_location == 'onroad':
             self.charging = False
-            logging.debug('DISCHARGE')
+            logging.debug('car {} is discharging'.format(self.id))
             self.current_battery_volume -= self.energy_rate * \
                 (self.model.p.average_driving_speed *
                  0.25)  # energy consumption per 15min
@@ -159,10 +158,10 @@ class EV(ap.Agent):
             if self.smart:
                 if any(i % self.model.t == 0 for i in self.cheapest_timesteps):
                     self.charge() # only charge on smart times
-                    logging.debug('smart charging')
+                    logging.debug('car {} is smart charging'.format(self.id))
             else:
                 self.charge() # just go ahead and charge
-                logging.debug('not smart charging')
+                logging.debug('car {} is normal charging'.format(self.id))
                 
         # determine current battery percentage
         self.battery_percentage = (self.current_battery_volume / self.battery_volume) * 100
@@ -204,6 +203,7 @@ class EV(ap.Agent):
             self.time_charging_must_finish = None
             self.needed_battery_level_at_charging_end = None
 
+        logging.debug('time {} battery_info car {} has {} battery'.format(self.model.t, self.id, self.battery_percentage))
 
 
         #related to charging

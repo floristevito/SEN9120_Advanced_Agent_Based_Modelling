@@ -4,7 +4,7 @@ parameters = {
     'steps': 96 * 1,
     'g': 0.000076,
     'm': 3,
-    'percentage_ev': 0.00029,
+    'percentage_ev': 0.0000029 * 0.2,
     'VTG_percentage': 0.15,
     'charging_speed_min': 20,
     'charging_speed_max': 60,
@@ -24,9 +24,11 @@ parameters = {
     'm_energy': 0.192,
     'h_energy': 0.281,
     'p_smart': 0,
+    'seed': 41,
 }
 
 model = EtmEVsModel(parameters)
 print('starting simulation')
 results = model.run()
 results.variables.EtmEVsModel.plot()
+results.variables.EtmEVsModel['average_battery_percentage'].plot()
