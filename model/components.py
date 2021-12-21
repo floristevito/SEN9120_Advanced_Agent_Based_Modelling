@@ -150,8 +150,7 @@ class EV(ap.Agent):
             self.charging = False
             logging.debug('car {} is discharging'.format(self.id))
             self.current_battery_volume -= self.energy_rate * \
-                (self.model.p.average_driving_speed *
-                 0.25)  # energy consumption per 15min
+                (self.model.p.average_driving_speed)  # energy consumption per 15min
         # charging
         else:
             self.charging = False

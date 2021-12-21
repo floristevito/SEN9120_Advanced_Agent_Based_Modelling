@@ -1,3 +1,4 @@
+import pandas as pd
 from model import EtmEVsModel
 
 parameters = {
@@ -30,5 +31,15 @@ parameters = {
 model = EtmEVsModel(parameters)
 print('starting simulation')
 results = model.run()
-results.variables.EtmEVsModel.plot()
-results.variables.EtmEVsModel['average_battery_percentage'].plot()
+
+ranges = []
+for i in model.EVs:
+    range = i.battery_volume / i.energy_rate 
+    ranges.append(range)
+df = pd.DataFrame(data={'bereik':ranges})
+
+print(df['bereik'].min())
+print(df['bereik'].max())
+
+fig = df['bereik'].hist()
+fig.get_figure().savefig('ranges_dist.png')
