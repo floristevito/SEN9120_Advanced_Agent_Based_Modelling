@@ -23,7 +23,7 @@ parameters = {
     'l_energy': 0.104,
     'm_energy': 0.192,
     'h_energy': 0.281,
-    'p_smart': 0,
+    'p_smart': 0.5,
     'seed': 4,
 }
 

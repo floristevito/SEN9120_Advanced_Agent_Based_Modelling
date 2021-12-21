@@ -39,8 +39,8 @@ class EV(ap.Agent):
         self.cheapest_timesteps = []
         self.current_power_demand = None
         self.battery_level_at_charging_start = None
-        self.time_charging_must_finish = None
-        self.needed_battery_level_at_charging_end = None
+        self.time_charging_must_finish = self.departure_time + self.offset_dep
+        self.needed_battery_level_at_charging_end = self.battery_volume
         self.VTG_capacity = 0
         self.allowed_VTG_percentage = None
 
@@ -173,6 +173,7 @@ class EV(ap.Agent):
             self.current_power_demand = self.charging_speed * 0.25
 
             #if the EV is plugged in and charging, but can postpone battery without falling under the latest charging moment bound
+            
             if self.current_battery_volume != (self.needed_battery_level_at_charging_end - (self.charging_speed * 0.25 * (self.time_charging_must_finish - self.model.t))):
                 if self.smart and any(i % self.model.t == 0 for i in self.cheapest_timesteps):
                     self.VTG_capacity = self.charging_speed * 0.25
