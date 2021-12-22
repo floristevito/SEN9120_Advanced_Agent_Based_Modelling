@@ -48,6 +48,7 @@ class EV(ap.Agent):
         self.VTG_capacity = 0
         self.allowed_VTG_percentage = None
         self.force_charge = False
+        self.plugged_in = False
 
     def choose_cheapest_timesteps(self, starting_time, ending_time, charge_needed):
         '''This function will tell you the most economic (cheap) way of getting to a full charge within the time window, if possible
@@ -86,17 +87,20 @@ class EV(ap.Agent):
         self.charging = False
         self.arrival_time_work = self.model.t + self.travel_time  # ETA
         self.departure_time += 96  # update departure time
+        self.plugged_in = False
 
     def departure_home(self):
         self.current_location = 'onroad'
         self.moving = True
         self.charging = False
         self.arrival_time_home = self.model.t + self.travel_time
+        self.plugged_in = False
 
     def arrive_work(self):
         self.current_location = 'work'
         self.moving = False
         self.return_time = self.model.t + self.dwell_time + self.offset_dwell
+        self.plugged_in = True
 
         # related to charging
         self.battery_level_at_charging_start = self.current_battery_volume
@@ -115,6 +119,7 @@ class EV(ap.Agent):
     def arrive_home(self):
         self.current_location = 'home'
         self.moving = False
+        self.plugged_in = True
 
         # related to charging
         self.battery_level_at_charging_start = self.current_battery_volume
@@ -187,7 +192,7 @@ class EV(ap.Agent):
             self.current_battery_volume / self.battery_volume) * 100
 
         # determine current power demand and VTG capacity
-        if self.charging:
+        if self.plugged_in:
             self.VTG_capacity = 0
             self.current_power_demand = self.charging_speed * 0.25
 
