@@ -193,37 +193,51 @@ class EV(ap.Agent):
 
         # determine current power demand and VTG capacity
         if self.plugged_in:
-            self.VTG_capacity = 0
-            self.current_power_demand = self.charging_speed * 0.25
+            self.VTG_capacity = 0 #variable is reset for good measure, as assurance for the adding VTG function below
+
+            #if you are currently drawing power, you have a power demand
+            if self.charging:
+                self.current_power_demand = self.charging_speed * 0.25
 
             # if the EV is plugged in and charging, but can postpone battery without falling under the latest charging moment bound
             logging.debug('current_battery_volume {} \n self.needed_battery_level_at_charging_end {} \n self.time_charging_must_finish {} \n self.energy_required {}'.format(
                 self.current_battery_volume, self.needed_battery_level_at_charging_end, self.time_charging_must_finish, self.energy_required))
+
+            #if your car has not reached the latest charging bound (lcb)
             if self.current_battery_volume != (self.needed_battery_level_at_charging_end - (self.charging_speed * 0.25 * (self.time_charging_must_finish - self.model.t))):
+                #if its smart and currently charging
                 if self.smart and any(i % self.model.t == 0 for i in self.cheapest_timesteps):
                     self.VTG_capacity = self.charging_speed * 0.25
+                #if its not smart but charging
                 else:
                     self.VTG_capacity = self.charging_speed * 0.25
 
+            #linear algebra to calculate the amount of VTG possible
             Intersection_Xcor_lcb = 0.5*(self.time_charging_must_finish + self.model.t) + (
                 (2 / self.charging_speed) * (self.current_battery_volume - self.needed_battery_level_at_charging_end))
             Intersection_Ycor_lcb = 0.25*self.charging_speed * \
                 (-Intersection_Xcor_lcb + self.model.t) + \
                 self.current_battery_volume
+            #distance lb = the amount of power you could empty until you reach the lower bound (lb)
             distance_lb = self.current_battery_volume-self.battery_level_at_charging_start
+            #distance lcb = the amount of power you could empty until you reach the latest charging bound (lcb)
             distance_lcb = self.current_battery_volume-Intersection_Ycor_lcb
+
             self.VTG_capacity += max(min(distance_lb, distance_lcb,
                                      self.allowed_VTG_percentage*self.battery_volume), 0)
 
         else:
             self.current_power_demand = 0
             self.VTG_capacity = 0
-            self.battery_level_at_charging_start = 0
-            self.time_charging_must_finish = 0
-            self.needed_battery_level_at_charging_end = 0
+            self.battery_level_at_charging_start = None
+            self.time_charging_must_finish = None
+            self.needed_battery_level_at_charging_end = None
 
-        logging.debug('time {} battery_info car {} has {} battery'.format(
-            self.model.t, self.id, self.battery_percentage))
+        logging.debug('time {} battery_info car {} has {} procent battery, (absolute: {})'.format(
+            self.model.t, self.id, self.battery_percentage, self.current_battery_volume))
+
+
+
 class Municipality(ap.Agent):
     """[summary]
 
