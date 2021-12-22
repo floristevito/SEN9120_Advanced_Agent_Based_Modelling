@@ -27,6 +27,7 @@ class EtmEVsModel(ap.Model):
         self.average_battery_percentage = 100
         self.total_current_power_demand = None
         self.total_VTG_capacity = None
+        self.mean_charging = None
 
         # generate the manicipalities according to data prep file
         self.OD = generate_OD(self.p.g, self.p.m)
@@ -96,6 +97,7 @@ class EtmEVsModel(ap.Model):
         self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
         self.total_current_power_demand = np.sum(list(self.EVs.current_power_demand))
         self.total_VTG_capacity = np.sum(list(self.EVs.VTG_capacity))
+        self.mean_charging = np.mean(list(self.EVs.charging))
         # debug stats
         logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
         logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))
@@ -106,6 +108,7 @@ class EtmEVsModel(ap.Model):
         self.record('average_battery_percentage')
         self.record('total_current_power_demand')
         self.record('total_VTG_capacity')
+        self.record('mean_charging')
     
     def end(self):
         """ Repord an evaluation measure. """

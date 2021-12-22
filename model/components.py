@@ -71,6 +71,7 @@ class EV(ap.Agent):
         timesteps_needed = math.ceil(charge_needed/self.charging_speed)
         if timesteps_needed > (abs(ending_time-starting_time)):
             # charge all the available times
+            logging.warning('not enough timesteps for car {} to charge'.format(self.id))
             self.cheapest_timesteps = [
                 i for i in range(starting_time, ending_time)]
         else:
@@ -128,8 +129,8 @@ class EV(ap.Agent):
         logging.debug('In def arrive_home: \n self.time_charging must finish {} \n self.needed_battery_level_at_charging_end {} \n self.battery_level_at_charging_start {} \n self.energy_required {} \n self.current_battery_volume {}'.format(
             self.time_charging_must_finish, self.needed_battery_level_at_charging_end, self.battery_level_at_charging_start, self.energy_required, self.current_battery_volume))
         if self.smart:
-            self.choose_cheapest_timesteps(self.model.t, self.departure_time + self.offset_dep, (
-                self.battery_volume - self.current_battery_volume))  # self.battery_volume used to be "100"
+            self.choose_cheapest_timesteps(self.model.t, self.departure_time + self.offset_dep, \
+                (self.battery_volume - self.current_battery_volume))  # at home, the battery will charge to full
 
     def charge(self):
         if self.current_battery_volume < self.battery_volume:
@@ -140,6 +141,9 @@ class EV(ap.Agent):
                 self.current_battery_volume += increase  # charge
             else:
                 self.current_battery_volume = self.battery_volume  # set to max
+        else:
+            self.charging = False  # charging is false if the battery is full
+
 
     def step(self):
         # move, determine location and destination
@@ -149,6 +153,9 @@ class EV(ap.Agent):
             else:
                 logging.warning(
                     'charge too low to go in morning, should not happen')
+                self.departure_time += 1
+                self.charge()
+
         elif (self.model.t == self.arrival_time_work) and (self.current_location == 'onroad'):
             self.arrive_work()
         elif (self.model.t % self.return_time == 0) and (self.current_location == 'work'):
@@ -156,9 +163,9 @@ class EV(ap.Agent):
             if self.current_battery_volume >= self.energy_required:
                 self.departure_home()
             else:
-                # if not enough charge, wait untill enough charge is available
+                # if not enough charge, wait until enough charge is available
                 self.return_time += 1
-                self.force_charge = True # force EV to charge 
+                self.charge()
         elif (self.model.t == self.arrival_time_home) and (self.current_location == 'onroad'):
             self.arrive_home()
             self.offset_dep = int(self.model.random.uniform(-self.model.p.offset_dep,
@@ -176,12 +183,13 @@ class EV(ap.Agent):
                 (self.model.p.average_driving_speed)  # energy consumption per 15min
         # charging
         else:
-            self.charging = False  # set default to false, will be true when calling self.charge
             if self.smart:
                 if any(i % self.model.t == 0 for i in self.cheapest_timesteps) or self.force_charge:
                     self.charge()  # only charge on smart times
                     self.force_charge = False # reset force charge
                     logging.debug('car {} is smart charging'.format(self.id))
+                else:
+                    self.charging = False
             else:
                 self.charge()  # just go ahead and charge
                 self.force_charge = False # reset force charge
@@ -198,6 +206,8 @@ class EV(ap.Agent):
             #if you are currently drawing power, you have a power demand
             if self.charging:
                 self.current_power_demand = self.charging_speed * 0.25
+            else:
+                self.current_power_demand = 0
 
             # if the EV is plugged in and charging, but can postpone battery without falling under the latest charging moment bound
             logging.debug('current_battery_volume {} \n self.needed_battery_level_at_charging_end {} \n self.time_charging_must_finish {} \n self.energy_required {}'.format(
@@ -208,11 +218,17 @@ class EV(ap.Agent):
             if (self.current_battery_volume - self.charging_speed * 0.25) > \
                 (self.needed_battery_level_at_charging_end - (self.charging_speed * 0.25 * (self.time_charging_must_finish - self.model.t))):
                 #if its smart and currently charging, you could now postpone some charging
-                if self.smart and any(i % self.model.t == 0 for i in self.cheapest_timesteps):
-                    self.VTG_capacity = self.charging_speed * 0.25
+                if self.smart:
+                    #if you are smart, but not charging in this timestep, the VTG will not add
+                    if any(i % self.model.t == 0 for i in self.cheapest_timesteps):
+                        self.VTG_capacity = self.charging_speed * 0.25
+                    else: 
+                        self.VTG_capacity = 0
                 #if its not smart but charging, you could now postpone some charging
                 else:
-                    self.VTG_capacity = self.charging_speed * 0.25
+                    #only if your battery isnt full you can demand charge and therefore postpone that charge
+                    if self.current_battery_volume < self.battery_volume:
+                        self.VTG_capacity = self.charging_speed * 0.25
 
             #linear algebra to calculate the amount of VTG possible
             Intersection_Xcor_lcb = 0.5*(self.time_charging_must_finish + self.model.t) + (
