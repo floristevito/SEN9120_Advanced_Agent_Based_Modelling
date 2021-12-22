@@ -204,11 +204,13 @@ class EV(ap.Agent):
                 self.current_battery_volume, self.needed_battery_level_at_charging_end, self.time_charging_must_finish, self.energy_required))
 
             #if your car has not reached the latest charging bound (lcb)
-            if self.current_battery_volume != (self.needed_battery_level_at_charging_end - (self.charging_speed * 0.25 * (self.time_charging_must_finish - self.model.t))):
-                #if its smart and currently charging
+            #if there is at least one timestep worth of charging more in the battery
+            if (self.current_battery_volume - self.charging_speed * 0.25) > \
+                (self.needed_battery_level_at_charging_end - (self.charging_speed * 0.25 * (self.time_charging_must_finish - self.model.t))):
+                #if its smart and currently charging, you could now postpone some charging
                 if self.smart and any(i % self.model.t == 0 for i in self.cheapest_timesteps):
                     self.VTG_capacity = self.charging_speed * 0.25
-                #if its not smart but charging
+                #if its not smart but charging, you could now postpone some charging
                 else:
                     self.VTG_capacity = self.charging_speed * 0.25
 
