@@ -38,7 +38,7 @@ class EV(ap.Agent):
         self.smart = self.model.random.random() < self.model.p.p_smart
         self.cheapest_timesteps = []
         self.current_power_demand = None
-        self.battery_level_at_charging_start = None
+        self.battery_level_at_charging_start = self.battery_volume
         self.time_charging_must_finish = self.departure_time + self.offset_dep
         self.needed_battery_level_at_charging_end = self.battery_volume
         self.VTG_capacity = 0
@@ -92,6 +92,7 @@ class EV(ap.Agent):
         #related to charging
         self.battery_level_at_charging_start = self.current_battery_volume
         self.time_charging_must_finish = self.return_time
+        logging.debug('In def arrive_work: \n self.energy_required {} \n self.current_battery_volume {}'.format(self.energy_required , self.current_battery_volume))
         if self.energy_required - self.current_battery_volume > 0:
             self.needed_battery_level_at_charging_end = self.energy_required
         else:
@@ -108,7 +109,7 @@ class EV(ap.Agent):
         self.battery_level_at_charging_start = self.current_battery_volume
         self.time_charging_must_finish = self.departure_time + self.offset_dep
         self.needed_battery_level_at_charging_end = self.battery_volume
-        
+        logging.debug('In def arrive_home: \n self.time_charging must finish {} \n self.needed_battery_level_at_charging_end {} \n self.battery_level_at_charging_start {} \n self.energy_required {} \n self.current_battery_volume {}'.format(self.time_charging_must_finish , self.needed_battery_level_at_charging_end,self.battery_level_at_charging_start, self.energy_required, self.current_battery_volume))
         if self.smart:
             self.choose_cheapest_timesteps(self.model.t, self.departure_time + self.offset_dep, (self.battery_volume - self.current_battery_volume)) #self.battery_volume used to be "100"
     
@@ -173,7 +174,7 @@ class EV(ap.Agent):
             self.current_power_demand = self.charging_speed * 0.25
 
             #if the EV is plugged in and charging, but can postpone battery without falling under the latest charging moment bound
-            
+            logging.debug('current_battery_volume {} \n self.needed_battery_level_at_charging_end {} \n self.time_charging_must_finish {} \n self.energy_required {}'.format(self.current_battery_volume , self.needed_battery_level_at_charging_end , self.time_charging_must_finish,self.energy_required))
             if self.current_battery_volume != (self.needed_battery_level_at_charging_end - (self.charging_speed * 0.25 * (self.time_charging_must_finish - self.model.t))):
                 if self.smart and any(i % self.model.t == 0 for i in self.cheapest_timesteps):
                     self.VTG_capacity = self.charging_speed * 0.25
