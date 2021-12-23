@@ -38,9 +38,9 @@ def example_model():
 
 def test_choose_cheapest_timesteps(example_model):
     ev = example_model.EVs[0]
-    ev.charging_speed = 2
-    ev.choose_cheapest_timesteps(0,50,50) # charge between time 0 and time 50
-    assert len(ev.cheapest_timesteps) == 25
+    ev.charging_speed = 4
+    ev.choose_cheapest_timesteps(0,50,10) # charge between time 0 and time 50
+    assert len(ev.cheapest_timesteps) == 10
 
 def test_charging_exceed(example_model):
     ev = example_model.EVs[0]
