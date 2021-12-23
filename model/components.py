@@ -68,7 +68,7 @@ class EV(ap.Agent):
         else:
             total_time_window = self.model.ma_price_history[starting_time %
                                                             96:] + self.model.ma_price_history[:ending_time % 96]
-        timesteps_needed = math.ceil(charge_needed/self.charging_speed)
+        timesteps_needed = math.ceil(charge_needed/(self.charging_speed*0.25))
         if timesteps_needed > (abs(ending_time-starting_time)):
             # charge all the available times
             logging.warning('not enough timesteps for car {} to charge'.format(self.id))
@@ -129,8 +129,9 @@ class EV(ap.Agent):
         logging.debug('In def arrive_home: \n self.time_charging must finish {} \n self.needed_battery_level_at_charging_end {} \n self.battery_level_at_charging_start {} \n self.energy_required {} \n self.current_battery_volume {}'.format(
             self.time_charging_must_finish, self.needed_battery_level_at_charging_end, self.battery_level_at_charging_start, self.energy_required, self.current_battery_volume))
         if self.smart:
-            self.choose_cheapest_timesteps(self.model.t, self.departure_time + self.offset_dep, \
-                (self.battery_volume - self.current_battery_volume))  # at home, the battery will charge to full
+            self.choose_cheapest_timesteps(self.model.t, self.time_charging_must_finish, \
+                (self.battery_volume - self.current_battery_volume)) 
+            logging.debug("{} cheapest timesteps are {}".format(self.id, self.cheapest_timesteps)) # at home, the battery will charge to full
 
     def charge(self):
         if self.current_battery_volume < self.battery_volume:
