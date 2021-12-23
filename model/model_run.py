@@ -1,16 +1,16 @@
 from model import EtmEVsModel
 
 parameters = {
-    'steps': 96 * 10,
+    'steps': 0,
     'g': 0.000076,
     'm': 3,
-    'percentage_ev': 0.0000029 * 0.2,# 0.0000029 * 0.2,0.00003
+    'percentage_ev': 0.0000029 * 0.2,# 0.0003,
     'VTG_percentage': 0.15,
     'charging_speed_min': 20,
     'charging_speed_max': 60,
-    'l_dep': 20,
-    'm_dep': 23,
-    'h_dep': 44,
+    'l_dep': 20*1.5,
+    'm_dep': 23*1.5,
+    'h_dep': 44*1.5,
     'offset_dep': 2,
     'l_dwell': 12,
     'm_dwell': 28,
@@ -24,7 +24,7 @@ parameters = {
     'm_energy': 0.192,
     'h_energy': 0.281,
     'p_smart': 1,
-    'seed': 4,
+    'seed': 421,
 }
 
 model = EtmEVsModel(parameters)
