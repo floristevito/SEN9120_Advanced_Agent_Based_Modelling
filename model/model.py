@@ -51,19 +51,21 @@ class EtmEVsModel(ap.Model):
         # give the right properties to every EV according to the data prep file
         for mun in self.municipalities:
             for ev in range(mun.number_EVs):
-                #set home location
+                # set home location
                 self.EVs.home_location[index] = mun.name
                 self.EVs.home_id[index] = mun.id
                 # pick destination, higher p_flow gives higher chance to be picked
-                mapped_dest = mun.OD.sample(1, weights='p_flow', random_state=self.p.seed)
+                mapped_dest = mun.OD.sample(
+                    1, weights='p_flow', random_state=self.p.seed)
                 self.EVs.work_location_id[index] = mapped_dest['destination_id'].iloc[0]
                 self.EVs.work_location_name[index] = self.municipalities_data.loc[self.EVs.work_location_id[index], 'GM_NAAM']
                 self.EVs.commute_distance[index] = mapped_dest['distance'].iloc[0]
                 # travel times in 15 minutes units
                 self.EVs.travel_time[index] = max(1, round(
-                    self.EVs.commute_distance[index]/self.p.average_driving_speed)) # give at least 1 time step
+                    self.EVs.commute_distance[index]/self.p.average_driving_speed))  # give at least 1 time step
                 # give a enery required for trip memory
-                self.EVs.energy_required[index] = self.EVs.energy_rate[index] * self.EVs.commute_distance[index]
+                self.EVs.energy_required[index] = self.EVs.energy_rate[index] * \
+                    self.EVs.commute_distance[index]
                 # check if maximum battery volume in model is enough to reach destination, if not, give the value needed to reach destination
                 if self.model.p.h_vol < self.EVs.energy_required[index]:
                     self.EVs.battery_volume[index] = self.EVs.energy_required[index]
@@ -95,15 +97,20 @@ class EtmEVsModel(ap.Model):
         self.fill_history()
         self.calc_ma_price_history()
         self.EVs.step()
-        self.average_battery_percentage = np.mean(list(self.EVs.battery_percentage))
-        self.total_current_power_demand = np.sum(list(self.EVs.current_power_demand))
+        self.average_battery_percentage = np.mean(
+            list(self.EVs.battery_percentage))
+        self.total_current_power_demand = np.sum(
+            list(self.EVs.current_power_demand))
         self.total_VTG_capacity = np.sum(list(self.EVs.VTG_capacity))
         self.mean_charging = np.mean(list(self.EVs.charging))
         # debug stats
-        logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
-        logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))
-        logging.debug('time {} EVs at work:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'work'))))
-        
+        logging.debug('time {} EVs on road:{}'.format(self.model.t, len(
+            self.EVs.select(self.EVs.current_location == 'onroad'))))
+        logging.debug('time {} EVs at home:{}'.format(self.model.t, len(
+            self.EVs.select(self.EVs.current_location == 'home'))))
+        logging.debug('time {} EVs at work:{}'.format(self.model.t, len(
+            self.EVs.select(self.EVs.current_location == 'work'))))
+
         # for municipalities
         self.municipalities.step()
 
@@ -114,29 +121,26 @@ class EtmEVsModel(ap.Model):
         self.record('total_VTG_capacity')
         self.record('mean_charging')
         self.municipalities.record('current_power_demand')
-    
-    def end(self):
-        """ Repord an evaluation measure. """
-        pass
 
     def fill_history(self):
         '''
         Fills the memory of agents with the previous prices
-        
+
         SHOULD BE DONE ON SUPERCLASS LEVEL TO SAVE DATA AND COMPUTATIONS
-        
+
         '''
-        
-        self.price_history[(self.t %96)-1].append(round(self.Electricity_price['Electricity_price'][self.t],2))
-        
+
+        self.price_history[(
+            self.t % 96)-1].append(round(self.Electricity_price['Electricity_price'][self.t], 2))
+
     def calc_ma_price_history(self):
         '''
         From self.price_history creates avarage prices for a 24h cycle
-        
+
         Could be expanded to a 4*24h cycle if wanted
-        
+
         '''
         self.ma_price_history.clear()
         for i in self.price_history:
-            segment = i[max(-7,-len(i)):]
-            self.ma_price_history.append(round(np.mean(segment),2))
+            segment = i[max(-7, -len(i)):]
+            self.ma_price_history.append(round(np.mean(segment), 2))

@@ -67,7 +67,8 @@ class EV(ap.Agent):
         timesteps_needed = math.ceil(charge_needed/(self.charging_speed*0.25))
         if timesteps_needed > (abs(ending_time-starting_time)):
             # charge all the available times
-            logging.warning('not enough timesteps for car {} to charge'.format(self.id))
+            logging.warning(
+                'not enough timesteps for car {} to charge'.format(self.id))
             self.cheapest_timesteps = [
                 i for i in range(starting_time, ending_time)]
         else:
@@ -85,7 +86,8 @@ class EV(ap.Agent):
         self.arrival_time_work = self.model.t + self.travel_time  # ETA
         self.departure_time += 96  # update departure time
         self.plugged_in = False
-        self.model.municipalities.select(self.model.municipalities.id == self.home_id).current_EVs.remove(self)
+        self.model.municipalities.select(
+            self.model.municipalities.id == self.home_id).current_EVs.remove(self)
 
     def departure_home(self):
         self.current_location = 'onroad'
@@ -93,14 +95,16 @@ class EV(ap.Agent):
         self.charging = False
         self.arrival_time_home = self.model.t + self.travel_time
         self.plugged_in = False
-        self.model.municipalities.select(self.model.municipalities.id == self.work_location_id).current_EVs.remove(self)
+        self.model.municipalities.select(
+            self.model.municipalities.id == self.work_location_id).current_EVs.remove(self)
 
     def arrive_work(self):
         self.current_location = 'work'
         self.moving = False
         self.return_time = self.model.t + self.dwell_time + self.offset_dwell
         self.plugged_in = True
-        self.model.municipalities.select(self.model.municipalities.id == self.work_location_id).current_EVs.append(self)
+        self.model.municipalities.select(
+            self.model.municipalities.id == self.work_location_id).current_EVs.append(self)
 
         # related to charging
         self.battery_level_at_charging_start = self.current_battery_volume
@@ -120,7 +124,8 @@ class EV(ap.Agent):
         self.current_location = 'home'
         self.moving = False
         self.plugged_in = True
-        self.model.municipalities.select(self.model.municipalities.id == self.home_id).current_EVs.append(self)
+        self.model.municipalities.select(
+            self.model.municipalities.id == self.home_id).current_EVs.append(self)
 
         # related to charging
         self.battery_level_at_charging_start = self.current_battery_volume
@@ -129,9 +134,10 @@ class EV(ap.Agent):
         logging.debug('In def arrive_home: \n self.time_charging must finish {} \n self.needed_battery_level_at_charging_end {} \n self.battery_level_at_charging_start {} \n self.energy_required {} \n self.current_battery_volume {}'.format(
             self.time_charging_must_finish, self.needed_battery_level_at_charging_end, self.battery_level_at_charging_start, self.energy_required, self.current_battery_volume))
         if self.smart:
-            self.choose_cheapest_timesteps(self.model.t, self.time_charging_must_finish, \
-                (self.battery_volume - self.current_battery_volume)) 
-            logging.debug("{} cheapest timesteps are {}".format(self.id, self.cheapest_timesteps)) # at home, the battery will charge to full
+            self.choose_cheapest_timesteps(self.model.t, self.time_charging_must_finish,
+                                           (self.battery_volume - self.current_battery_volume))
+            logging.debug("{} cheapest timesteps are {}".format(
+                self.id, self.cheapest_timesteps))  # at home, the battery will charge to full
 
     def charge(self):
         if self.current_battery_volume < self.battery_volume:
@@ -144,7 +150,6 @@ class EV(ap.Agent):
                 self.current_battery_volume = self.battery_volume  # set to max
         else:
             self.charging = False  # charging is false if the battery is full
-
 
     def step(self):
         # move, determine location and destination
@@ -187,13 +192,13 @@ class EV(ap.Agent):
             if self.smart:
                 if any(i % self.model.t == 0 for i in self.cheapest_timesteps) or self.force_charge:
                     self.charge()  # only charge on smart times
-                    self.force_charge = False # reset force charge
+                    self.force_charge = False  # reset force charge
                     logging.debug('car {} is smart charging'.format(self.id))
                 else:
                     self.charging = False
             else:
                 self.charge()  # just go ahead and charge
-                self.force_charge = False # reset force charge
+                self.force_charge = False  # reset force charge
                 logging.debug('car {} is normal charging'.format(self.id))
 
         # determine current battery percentage
@@ -202,9 +207,10 @@ class EV(ap.Agent):
 
         # determine current power demand and VTG capacity
         if self.plugged_in:
-            self.VTG_capacity = 0 #variable is reset for good measure, as assurance for the adding VTG function below
+            # variable is reset for good measure, as assurance for the adding VTG function below
+            self.VTG_capacity = 0
 
-            #if you are currently drawing power, you have a power demand
+            # if you are currently drawing power, you have a power demand
             if self.charging:
                 self.current_power_demand = self.charging_speed * 0.25
             else:
@@ -214,32 +220,32 @@ class EV(ap.Agent):
             logging.debug('current_battery_volume {} \n self.needed_battery_level_at_charging_end {} \n self.time_charging_must_finish {} \n self.energy_required {}'.format(
                 self.current_battery_volume, self.needed_battery_level_at_charging_end, self.time_charging_must_finish, self.energy_required))
 
-            #if your car has not reached the latest charging bound (lcb)
-            #if there is at least one timestep worth of charging more in the battery
+            # if your car has not reached the latest charging bound (lcb)
+            # if there is at least one timestep worth of charging more in the battery
             if (self.current_battery_volume - self.charging_speed * 0.25) > \
-                (self.needed_battery_level_at_charging_end - (self.charging_speed * 0.25 * (self.time_charging_must_finish - self.model.t))):
-                #if its smart and currently charging, you could now postpone some charging
+                    (self.needed_battery_level_at_charging_end - (self.charging_speed * 0.25 * (self.time_charging_must_finish - self.model.t))):
+                # if its smart and currently charging, you could now postpone some charging
                 if self.smart:
-                    #if you are smart, but not charging in this timestep, the VTG will not add
+                    # if you are smart, but not charging in this timestep, the VTG will not add
                     if any(i % self.model.t == 0 for i in self.cheapest_timesteps):
                         self.VTG_capacity = self.charging_speed * 0.25
-                    else: 
+                    else:
                         self.VTG_capacity = 0
-                #if its not smart but charging, you could now postpone some charging
+                # if its not smart but charging, you could now postpone some charging
                 else:
-                    #only if your battery isnt full you can demand charge and therefore postpone that charge
+                    # only if your battery isnt full you can demand charge and therefore postpone that charge
                     if self.current_battery_volume < self.battery_volume:
                         self.VTG_capacity = self.charging_speed * 0.25
 
-            #linear algebra to calculate the amount of VTG possible
+            # linear algebra to calculate the amount of VTG possible
             Intersection_Xcor_lcb = 0.5*(self.time_charging_must_finish + self.model.t) + (
                 (2 / self.charging_speed) * (self.current_battery_volume - self.needed_battery_level_at_charging_end))
             Intersection_Ycor_lcb = 0.25*self.charging_speed * \
                 (-Intersection_Xcor_lcb + self.model.t) + \
                 self.current_battery_volume
-            #distance lb = the amount of power you could empty until you reach the lower bound (lb)
+            # distance lb = the amount of power you could empty until you reach the lower bound (lb)
             distance_lb = self.current_battery_volume-self.battery_level_at_charging_start
-            #distance lcb = the amount of power you could empty until you reach the latest charging bound (lcb)
+            # distance lcb = the amount of power you could empty until you reach the latest charging bound (lcb)
             distance_lcb = self.current_battery_volume-Intersection_Ycor_lcb
 
             self.VTG_capacity += max(min(distance_lb, distance_lcb,
@@ -256,22 +262,21 @@ class EV(ap.Agent):
             self.model.t, self.id, self.battery_percentage, self.current_battery_volume))
 
 
-
 class Municipality(ap.Agent):
     """model class for municipality agents. Most attributes are set to a value on the model level"""
-    
+
     def setup(self):
         self.current_EVs = []
         self.current_power_demand = None
         self.number_EVs = None
-    
+
     def update_power_demand(self):
         all_demand = [ev.current_power_demand for ev in self.current_EVs]
         self.current_power_demand = sum(all_demand)
-    
+
     def update_number_EVs(self):
         self.number_EVs = len(self.current_EVs)
-    
+
     def step(self):
         """updates all manucipality stats"""
         self.update_power_demand()
