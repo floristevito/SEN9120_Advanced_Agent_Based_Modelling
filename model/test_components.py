@@ -33,7 +33,7 @@ def example_model():
         'seed': 4,
     }
     example_model = EtmEVsModel(example_params)
-    example_model.run() # model must be run to fully initialize, set to one step only
+    example_model.run() # model must be run at least one step to fully initialize all EV variables and settings
     return example_model
 
 def test_choose_cheapest_timesteps(example_model):
@@ -117,4 +117,13 @@ def test_discharge(example_model):
     ev.step()
     assert ev.current_battery_volume < old_charge
 
-
+def test_power_demand(example_model):
+    ev = example_model.EVs[0]
+    example_model.t = 25
+    ev.arrival_time_home = 25 
+    ev.current_location = 'onroad'
+    ev.current_battery_volume = 20
+    ev.energy_required = 30
+    ev.smart = False
+    ev.step()
+    assert ev.current_power_demand > 0
