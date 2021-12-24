@@ -43,6 +43,7 @@ class EtmEVsModel(ap.Model):
             self.municipalities.inhabitants[index] = self.municipalities_data.loc[key, 'AANT_INW']
             self.municipalities.number_EVs[index] = round(
                 self.p.percentage_ev * self.municipalities.inhabitants[index])
+            self.municipalities.current_EVs[index] = self.municipalities.number_EVs[index]
 
         # generate EV's
         # generate all EV agents
@@ -53,10 +54,11 @@ class EtmEVsModel(ap.Model):
             for ev in range(mun.number_EVs):
                 #set home location
                 self.EVs.home_location[index] = mun.name
+                self.EVs.home_id[index] = mun.id
                 # pick destination, higher p_flow gives higher chance to be picked
                 mapped_dest = mun.OD.sample(1, weights='p_flow', random_state=self.p.seed)
-                self.EVs.work_lococation_id[index] = mapped_dest['destination_id'].iloc[0]
-                self.EVs.work_location_name[index] = self.municipalities_data.loc[self.EVs.work_lococation_id[index], 'GM_NAAM']
+                self.EVs.work_location_id[index] = mapped_dest['destination_id'].iloc[0]
+                self.EVs.work_location_name[index] = self.municipalities_data.loc[self.EVs.work_location_id[index], 'GM_NAAM']
                 self.EVs.commute_distance[index] = mapped_dest['distance'].iloc[0]
                 # travel times in 15 minutes units
                 self.EVs.travel_time[index] = max(1, round(

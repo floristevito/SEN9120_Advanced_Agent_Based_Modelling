@@ -89,6 +89,7 @@ class EV(ap.Agent):
         self.arrival_time_work = self.model.t + self.travel_time  # ETA
         self.departure_time += 96  # update departure time
         self.plugged_in = False
+        self.model.municipalities.select(self.model.municipalities.id == self.home_id).current_EVs -= 1
 
     def departure_home(self):
         self.current_location = 'onroad'
@@ -96,12 +97,14 @@ class EV(ap.Agent):
         self.charging = False
         self.arrival_time_home = self.model.t + self.travel_time
         self.plugged_in = False
+        self.model.municipalities.select(self.model.municipalities.id == self.work_location_id).current_EVs -= 1
 
     def arrive_work(self):
         self.current_location = 'work'
         self.moving = False
         self.return_time = self.model.t + self.dwell_time + self.offset_dwell
         self.plugged_in = True
+        self.model.municipalities.select(self.model.municipalities.id == self.work_location_id).current_EVs += 1
 
         # related to charging
         self.battery_level_at_charging_start = self.current_battery_volume
@@ -121,6 +124,7 @@ class EV(ap.Agent):
         self.current_location = 'home'
         self.moving = False
         self.plugged_in = True
+        self.model.municipalities.select(self.model.municipalities.id == self.home_id).current_EVs += 1
 
         # related to charging
         self.battery_level_at_charging_start = self.current_battery_volume
@@ -258,19 +262,5 @@ class EV(ap.Agent):
 
 
 class Municipality(ap.Agent):
-    """[summary]
-
-    Args:
-        ap ([type]): [description]
-    """
-
-    def setup(self):
-        self.name = None
-        self.OD = None
-        self.id = None
-        self.inhabitants = None
-        self.location = None
-        self.total_charging_spots = None
-        self.available_charging_spots = None
-        self.mun_tot_EV_buffer_cap = None
-        self.mun_tot_charging_power_demand = None
+    """model class for municipality agents. All attributes will be set on model level during setup"""
+    pass
