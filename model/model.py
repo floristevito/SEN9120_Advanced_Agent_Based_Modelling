@@ -43,7 +43,6 @@ class EtmEVsModel(ap.Model):
             self.municipalities.inhabitants[index] = self.municipalities_data.loc[key, 'AANT_INW']
             self.municipalities.number_EVs[index] = round(
                 self.p.percentage_ev * self.municipalities.inhabitants[index])
-            self.municipalities.current_EVs[index] = self.municipalities.number_EVs[index]
 
         # generate EV's
         # generate all EV agents
@@ -78,7 +77,7 @@ class EtmEVsModel(ap.Model):
                 self.EVs.current_battery_volume[index] = self.EVs.battery_volume[index]
                 # set VTG percentage
                 self.EVs.allowed_VTG_percentage = self.model.p.VTG_percentage
-
+                mun.current_EVs.append(self.EVs[index])
                 index += 1
 
         # push some stats to log file
@@ -92,7 +91,7 @@ class EtmEVsModel(ap.Model):
             'average energy rate of EVs (kWh/km): {}'.format(np.mean(list(self.EVs.energy_rate))))
 
     def step(self):
-        """Call all EV"""
+        # for EVs
         self.fill_history()
         self.calc_ma_price_history()
         self.EVs.step()
@@ -104,6 +103,9 @@ class EtmEVsModel(ap.Model):
         logging.debug('time {} EVs on road:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'onroad'))))
         logging.debug('time {} EVs at home:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'home'))))
         logging.debug('time {} EVs at work:{}'.format(self.model.t, len(self.EVs.select(self.EVs.current_location == 'work'))))
+        
+        # for municipalities
+        self.municipalities.step()
 
     def update(self):
         """ Record a dynamic variable. """
@@ -111,6 +113,7 @@ class EtmEVsModel(ap.Model):
         self.record('total_current_power_demand')
         self.record('total_VTG_capacity')
         self.record('mean_charging')
+        self.municipalities.record('current_power_demand')
     
     def end(self):
         """ Repord an evaluation measure. """

@@ -9,11 +9,7 @@ All model compontents
 
 
 class EV(ap.Agent):
-    """[summary]
-
-    Args:
-        ap ([type]): [description]
-    """
+    """model class for electric vehicle agents. Most attributes are set to a value on the model level"""
 
     def setup(self):
         self.charging_speed = self.model.random.uniform(
@@ -89,7 +85,7 @@ class EV(ap.Agent):
         self.arrival_time_work = self.model.t + self.travel_time  # ETA
         self.departure_time += 96  # update departure time
         self.plugged_in = False
-        self.model.municipalities.select(self.model.municipalities.id == self.home_id).current_EVs -= 1
+        self.model.municipalities.select(self.model.municipalities.id == self.home_id).current_EVs.remove(self)
 
     def departure_home(self):
         self.current_location = 'onroad'
@@ -97,14 +93,14 @@ class EV(ap.Agent):
         self.charging = False
         self.arrival_time_home = self.model.t + self.travel_time
         self.plugged_in = False
-        self.model.municipalities.select(self.model.municipalities.id == self.work_location_id).current_EVs -= 1
+        self.model.municipalities.select(self.model.municipalities.id == self.work_location_id).current_EVs.remove(self)
 
     def arrive_work(self):
         self.current_location = 'work'
         self.moving = False
         self.return_time = self.model.t + self.dwell_time + self.offset_dwell
         self.plugged_in = True
-        self.model.municipalities.select(self.model.municipalities.id == self.work_location_id).current_EVs += 1
+        self.model.municipalities.select(self.model.municipalities.id == self.work_location_id).current_EVs.append(self)
 
         # related to charging
         self.battery_level_at_charging_start = self.current_battery_volume
@@ -124,7 +120,7 @@ class EV(ap.Agent):
         self.current_location = 'home'
         self.moving = False
         self.plugged_in = True
-        self.model.municipalities.select(self.model.municipalities.id == self.home_id).current_EVs += 1
+        self.model.municipalities.select(self.model.municipalities.id == self.home_id).current_EVs.append(self)
 
         # related to charging
         self.battery_level_at_charging_start = self.current_battery_volume
@@ -262,5 +258,21 @@ class EV(ap.Agent):
 
 
 class Municipality(ap.Agent):
-    """model class for municipality agents. All attributes will be set on model level during setup"""
-    pass
+    """model class for municipality agents. Most attributes are set to a value on the model level"""
+    
+    def setup(self):
+        self.current_EVs = []
+        self.current_power_demand = None
+        self.number_EVs = None
+    
+    def update_power_demand(self):
+        all_demand = [ev.current_power_demand for ev in self.current_EVs]
+        self.current_power_demand = sum(all_demand)
+    
+    def update_number_EVs(self):
+        self.number_EVs = len(self.current_EVs)
+    
+    def step(self):
+        """updates all manucipality stats"""
+        self.update_power_demand()
+        self.update_number_EVs()
