@@ -12,7 +12,7 @@ Main model block
 
 
 class EtmEVsModel(ap.Model):
-    """Main model that simulates electric vehicles"""
+    """Main model that simulates electric vehicles."""
 
     def setup(self):
         # configure model log
@@ -115,7 +115,7 @@ class EtmEVsModel(ap.Model):
         self.municipalities.step()
 
     def update(self):
-        """ Record a dynamic variable. """
+        """ Record dynamic variables """
         self.record('average_battery_percentage')
         self.record('total_current_power_demand')
         self.record('total_VTG_capacity')
@@ -129,7 +129,6 @@ class EtmEVsModel(ap.Model):
         SHOULD BE DONE ON SUPERCLASS LEVEL TO SAVE DATA AND COMPUTATIONS
 
         '''
-
         self.price_history[(
             self.t % 96)-1].append(round(self.Electricity_price['Electricity_price'][self.t], 2))
 

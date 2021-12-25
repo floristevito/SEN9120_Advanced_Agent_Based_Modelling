@@ -240,10 +240,9 @@ class EV(ap.Agent):
             logging.debug('{} a new departure offset has been caculated {}'.format(
                 self.model.t, self.offset_dep))
 
-        # energy usage when on road
+        # discharging, idle or charging
         if self.current_location == 'onroad':
             self.discharge()
-        # charging
         else:
             if self.smart:
                 if any(i % self.model.t == 0 for i in self.cheapest_timesteps) or self.force_charge:
@@ -257,14 +256,14 @@ class EV(ap.Agent):
                 self.force_charge = False  # reset force charge
                 logging.debug('car {} is normal charging'.format(self.id))
 
-        # determine current battery percentage
+        # update current battery percentage
         self.battery_percentage = (
             self.current_battery_volume / self.battery_volume) * 100
 
         # determine current power demand and VTG capacity
         self.determine_power_demand()
 
-        logging.debug('time {} battery_info car {} has {} procent battery, (absolute: {})'.format(
+        logging.debug('time {} battery_info car {} has {} percent battery, (absolute: {})'.format(
             self.model.t, self.id, self.battery_percentage, self.current_battery_volume))
 
 
