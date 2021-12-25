@@ -56,6 +56,8 @@ def test_departure_work(example_model):
     ev.departure_time = 20
     ev.offset_dep = 0
     ev.current_location = 'home'
+    example_model.municipalities.select(
+            example_model.municipalities.id == ev.home_id).current_EVs.append(ev)
     ev.current_battery_volume = 20
     ev.energy_required = 20
     ev.step()
@@ -67,6 +69,8 @@ def test_low_charge_departure_work(example_model):
     ev.departure_time = 20
     ev.offset_dep = 0
     ev.current_location = 'home'
+    example_model.municipalities.select(
+            example_model.municipalities.id == ev.home_id).current_EVs.append(ev)
     ev.current_battery_volume = 20
     ev.energy_required = 30
     ev.step()
@@ -85,6 +89,8 @@ def test_departure_home(example_model):
     example_model.t = 80
     ev.arrival_return_time = 80
     ev.current_location = 'work'
+    example_model.municipalities.select(
+            example_model.municipalities.id == ev.work_location_id).current_EVs.append(ev)
     ev.current_battery_volume = 20
     ev.energy_required = 10
     ev.step()
@@ -95,6 +101,8 @@ def test_delay_home_departure(example_model):
     example_model.t = 80
     ev.arrival_return_time = 80
     ev.current_location = 'work'
+    example_model.municipalities.select(
+            example_model.municipalities.id == ev.work_location_id).current_EVs.append(ev)
     ev.current_battery_volume = 20
     ev.energy_required = 30
     ev.step()
