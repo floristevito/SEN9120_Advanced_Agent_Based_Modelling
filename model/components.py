@@ -150,62 +150,14 @@ class EV(ap.Agent):
                 self.current_battery_volume = self.battery_volume  # set to max
         else:
             self.charging = False  # charging is false if the battery is full
-
-    def step(self):
-        # move, determine location and destination
-        if (self.model.t % (self.departure_time + self.offset_dep) == 0) and (self.current_location == 'home'):
-            if self.current_battery_volume >= self.energy_required:
-                self.departure_work()
-            else:
-                logging.warning(
-                    'charge too low to go in morning, should not happen')
-                self.departure_time += 1
-                self.charge()
-
-        elif (self.model.t == self.arrival_time_work) and (self.current_location == 'onroad'):
-            self.arrive_work()
-        elif (self.model.t % self.return_time == 0) and (self.current_location == 'work'):
-            # check if enough charge, else wait at work
-            if self.current_battery_volume >= self.energy_required:
-                self.departure_home()
-            else:
-                # if not enough charge, wait until enough charge is available
-                self.return_time += 1
-                self.charge()
-        elif (self.model.t == self.arrival_time_home) and (self.current_location == 'onroad'):
-            self.arrive_home()
-            self.offset_dep = int(self.model.random.uniform(-self.model.p.offset_dep,
-                                  self.model.p.offset_dep))  # Offset for the next day
-            self.offset_dwell = int(self.model.random.uniform(
-                -self.model.p.offset_dwell, self.model.p.offset_dwell))  # Offset for the next day
-            logging.debug('{} a new departure offset has been caculated {}'.format(
-                self.model.t, self.offset_dep))
-
-        # energy usage when on road
-        if self.current_location == 'onroad':
-            self.charging = False
-            logging.debug('car {} is discharging'.format(self.id))
-            self.current_battery_volume -= self.energy_rate * \
-                (self.model.p.average_driving_speed)  # energy consumption per 15min
-        # charging
-        else:
-            if self.smart:
-                if any(i % self.model.t == 0 for i in self.cheapest_timesteps) or self.force_charge:
-                    self.charge()  # only charge on smart times
-                    self.force_charge = False  # reset force charge
-                    logging.debug('car {} is smart charging'.format(self.id))
-                else:
-                    self.charging = False
-            else:
-                self.charge()  # just go ahead and charge
-                self.force_charge = False  # reset force charge
-                logging.debug('car {} is normal charging'.format(self.id))
-
-        # determine current battery percentage
-        self.battery_percentage = (
-            self.current_battery_volume / self.battery_volume) * 100
-
-        # determine current power demand and VTG capacity
+    
+    def discharge(self):
+        self.charging = False
+        logging.debug('car {} is discharging'.format(self.id))
+        self.current_battery_volume -= self.energy_rate * \
+            (self.model.p.average_driving_speed)  # energy consumption per 15min
+    
+    def determine_power_demand(self):
         if self.plugged_in:
             # variable is reset for good measure, as assurance for the adding VTG function below
             self.VTG_capacity = 0
@@ -257,6 +209,60 @@ class EV(ap.Agent):
             self.battery_level_at_charging_start = None
             self.time_charging_must_finish = None
             self.needed_battery_level_at_charging_end = None
+
+    def step(self):
+        """step function for EV, is called for every agent every time step"""
+        # move, determine location and destination
+        if (self.model.t % (self.departure_time + self.offset_dep) == 0) and (self.current_location == 'home'):
+            if self.current_battery_volume >= self.energy_required:
+                self.departure_work()
+            else:
+                logging.warning(
+                    'charge too low to go in morning, should not happen')
+                self.departure_time += 1
+                self.charge()
+        elif (self.model.t == self.arrival_time_work) and (self.current_location == 'onroad'):
+            self.arrive_work()
+        elif (self.model.t % self.return_time == 0) and (self.current_location == 'work'):
+            # check if enough charge, else wait at work
+            if self.current_battery_volume >= self.energy_required:
+                self.departure_home()
+            else:
+                # if not enough charge, wait until enough charge is available
+                self.return_time += 1
+                self.charge()
+        elif (self.model.t == self.arrival_time_home) and (self.current_location == 'onroad'):
+            self.arrive_home()
+            self.offset_dep = int(self.model.random.uniform(-self.model.p.offset_dep,
+                                  self.model.p.offset_dep))  # Offset for the next day
+            self.offset_dwell = int(self.model.random.uniform(
+                -self.model.p.offset_dwell, self.model.p.offset_dwell))  # Offset for the next day
+            logging.debug('{} a new departure offset has been caculated {}'.format(
+                self.model.t, self.offset_dep))
+
+        # energy usage when on road
+        if self.current_location == 'onroad':
+            self.discharge()
+        # charging
+        else:
+            if self.smart:
+                if any(i % self.model.t == 0 for i in self.cheapest_timesteps) or self.force_charge:
+                    self.charge()  # only charge on smart times
+                    self.force_charge = False  # reset force charge
+                    logging.debug('car {} is smart charging'.format(self.id))
+                else:
+                    self.charging = False
+            else:
+                self.charge()  # just go ahead and charge
+                self.force_charge = False  # reset force charge
+                logging.debug('car {} is normal charging'.format(self.id))
+
+        # determine current battery percentage
+        self.battery_percentage = (
+            self.current_battery_volume / self.battery_volume) * 100
+
+        # determine current power demand and VTG capacity
+        self.determine_power_demand()
 
         logging.debug('time {} battery_info car {} has {} procent battery, (absolute: {})'.format(
             self.model.t, self.id, self.battery_percentage, self.current_battery_volume))
