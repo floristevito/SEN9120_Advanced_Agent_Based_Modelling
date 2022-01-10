@@ -28,7 +28,6 @@ class EtmEVsModel(ap.Model):
         self.total_current_power_demand = None
         self.total_VTG_capacity = None
         self.mean_charging = None
-
         # generate the manicipalities according to data prep file
         self.OD = generate_OD(self.p.g, self.p.m)
         self.municipalities_data = pd.read_csv(

@@ -32,7 +32,7 @@ class EV(ap.Agent):
             self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
         self.energy_rate = self.model.random.triangular(
             self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
-        if self.model.random.uniform(0,1) < self.model.p_pref:
+        if self.model.random.uniform(0,1) < self.model.p.p_pref:
             if self.model.random.uniform(0,1) < self.model.p.pref_home:
                 self.charge_pref = 'home'
             else:
@@ -248,23 +248,23 @@ class EV(ap.Agent):
                 self.model.t, self.offset_dep))
 
         # Determine whether to charge or not based on pref
-        charge_now = False
+        self.plugged_in = False
         if self.current_battery_volume >= self.energy_required:
             if self.charge_pref != None:
-                charge_now = True
+                self.plugged_in = True
             else:
                 if self.current_location == self.charge_pref:
-                    charge_now = True
+                    self.plugged_in = True
                 else: 
-                    charge_now = False
+                    self.plugged_in = False
         else:
-            charge_now = True
+            self.plugged_in = True
 
         # discharging, idle or charging
         if self.current_location == 'onroad':
             self.discharge()
         else:
-            if charge_now:
+            if self.plugged_in:
                 if self.smart:
                     if any(i % self.model.t == 0 for i in self.cheapest_timesteps) or self.force_charge:
                         self.charge()  # only charge on smart times
@@ -276,6 +276,8 @@ class EV(ap.Agent):
                     self.charge()  # just go ahead and charge
                     self.force_charge = False  # reset force charge
                     logging.debug('car {} is normal charging'.format(self.id))
+            else:
+                self.charging = False
 
         # update current battery percentage
         self.battery_percentage = (
