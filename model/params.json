@@ -22,5 +22,7 @@
     "m_energy": 0.192,
     "h_energy": 0.281,
     "p_smart": 0.2,
-    "seed": 421
+    "seed": 421,
+    "p_pref": 0.7,
+    "pref_home": 0.9
 }

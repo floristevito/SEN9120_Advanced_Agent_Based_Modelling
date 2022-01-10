@@ -32,6 +32,13 @@ class EV(ap.Agent):
             self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
         self.energy_rate = self.model.random.triangular(
             self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
+        if self.model.random.uniform(0,1) < self.model.p_pref:
+            if self.model.random.uniform(0,1) < self.model.p.pref_home:
+                self.charge_pref = 'home'
+            else:
+                self.charge_pref = 'work'
+        else:
+            self.charge_pref = None
         self.current_battery_volume = None
         self.battery_percentage = 100
         self.energy_required = None
