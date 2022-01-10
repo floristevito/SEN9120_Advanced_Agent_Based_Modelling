@@ -29,6 +29,8 @@ def example_params():
         'h_energy': 0.281,
         'p_smart': 1,
         'seed': 4,
+        'p_pref': 0.7,
+        'pref_home': 0.9
     }
 
 def test_number_agents(example_params):

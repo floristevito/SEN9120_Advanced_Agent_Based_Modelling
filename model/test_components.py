@@ -31,6 +31,8 @@ def example_model():
         'h_energy': 0.281,
         'p_smart': 1,
         'seed': 4,
+        'p_pref': 0.7,
+        'pref_home': 0.9
     }
     example_model = EtmEVsModel(example_params)
     example_model.run() # model must be run at least one step to fully initialize all EV variables and settings
@@ -135,3 +137,47 @@ def test_power_demand(example_model):
     ev.smart = False
     ev.step()
     assert ev.current_power_demand > 0
+
+def test_pref_home(example_model):
+    ev = example_model.EVs[0]
+    example_model.t = 20
+    ev.departure_time = 25
+    ev.offset_dep = 0
+    ev.current_location = 'home'
+    ev.charge_pref = 'home'
+    ev.smart = False
+    ev.step()
+    assert ev.plugged_in == True
+
+def test_pref_work(example_model):
+    ev = example_model.EVs[0]
+    example_model.t = 50
+    ev.return_time = 65
+    ev.offset_dep = 0
+    ev.current_location = 'work'
+    ev.charge_pref = 'work'
+    ev.smart = False
+    ev.step()
+    assert ev.plugged_in == True
+
+def test_pref_home_smart(example_model):
+    ev = example_model.EVs[0]
+    example_model.t = 20
+    ev.departure_time = 25
+    ev.offset_dep = 0
+    ev.current_location = 'home'
+    ev.charge_pref = 'home'
+    ev.smart = True
+    ev.step()
+    assert ev.plugged_in == True
+
+def test_pref_work_smart(example_model):
+    ev = example_model.EVs[0]
+    example_model.t = 50
+    ev.return_time = 65
+    ev.offset_dep = 0
+    ev.current_location = 'work'
+    ev.charge_pref = 'work'
+    ev.smart = True
+    ev.step()
+    assert ev.plugged_in == True
