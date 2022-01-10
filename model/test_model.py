@@ -39,6 +39,15 @@ def test_number_agents(example_params):
     agents_end = len(example_model.EVs)
     assert agents_start == agents_end
 
+def test_power_demand(example_params):
+    example_model = EtmEVsModel(example_params)
+    example_model.setup()
+    example_model.run()
+    power_demands = [] 
+    for i in example_model.municipalities:
+        power_demands.append(i.current_power_demand)
+    assert min(power_demands) >= 0 
+
 def test_min_drive_range_agents(example_params):
     example_model = EtmEVsModel(example_params)
     example_model.setup() 

@@ -1,8 +1,8 @@
 {
-    "steps": 480,
+    "steps": 60,
     "g": 0.000076,
     "m": 3,
-    "percentage_ev": 0.00003,
+    "percentage_ev": 0.0003,
     "VTG_percentage": 0.15,
     "charging_speed_min": 20,
     "charging_speed_max": 60,
