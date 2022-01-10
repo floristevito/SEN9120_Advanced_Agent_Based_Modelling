@@ -248,17 +248,18 @@ class EV(ap.Agent):
                 self.model.t, self.offset_dep))
 
         # Determine whether to charge or not based on pref
-        self.plugged_in = False
-        if self.current_battery_volume >= self.energy_required:
-            if self.charge_pref != None:
-                self.plugged_in = True
-            else:
-                if self.current_location == self.charge_pref:
+        #self.plugged_in = False
+        if self.current_location != 'onroad':
+            if self.current_battery_volume >= self.energy_required:
+                if self.charge_pref != None:
                     self.plugged_in = True
-                else: 
-                    self.plugged_in = False
-        else:
-            self.plugged_in = True
+                else:
+                    if self.current_location == self.charge_pref:
+                        self.plugged_in = True
+                    else: 
+                        self.plugged_in = False
+            else:
+                self.plugged_in = True
 
         # discharging, idle or charging
         if self.current_location == 'onroad':
@@ -278,6 +279,7 @@ class EV(ap.Agent):
                     logging.debug('car {} is normal charging'.format(self.id))
             else:
                 self.charging = False
+                self.force_charge = False
 
         # update current battery percentage
         self.battery_percentage = (
