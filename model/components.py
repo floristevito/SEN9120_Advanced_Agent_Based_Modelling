@@ -247,21 +247,35 @@ class EV(ap.Agent):
             logging.debug('{} a new departure offset has been caculated {}'.format(
                 self.model.t, self.offset_dep))
 
+        # Determine whether to charge or not based on pref
+        charge_now = False
+        if self.current_battery_volume >= self.energy_required:
+            if self.charge_pref != None:
+                charge_now = True
+            else:
+                if self.current_location == self.charge_pref:
+                    charge_now = True
+                else: 
+                    charge_now = False
+        else:
+            charge_now = True
+
         # discharging, idle or charging
         if self.current_location == 'onroad':
             self.discharge()
         else:
-            if self.smart:
-                if any(i % self.model.t == 0 for i in self.cheapest_timesteps) or self.force_charge:
-                    self.charge()  # only charge on smart times
-                    self.force_charge = False  # reset force charge
-                    logging.debug('car {} is smart charging'.format(self.id))
+            if charge_now:
+                if self.smart:
+                    if any(i % self.model.t == 0 for i in self.cheapest_timesteps) or self.force_charge:
+                        self.charge()  # only charge on smart times
+                        self.force_charge = False  # reset force charge
+                        logging.debug('car {} is smart charging'.format(self.id))
+                    else:
+                        self.charging = False
                 else:
-                    self.charging = False
-            else:
-                self.charge()  # just go ahead and charge
-                self.force_charge = False  # reset force charge
-                logging.debug('car {} is normal charging'.format(self.id))
+                    self.charge()  # just go ahead and charge
+                    self.force_charge = False  # reset force charge
+                    logging.debug('car {} is normal charging'.format(self.id))
 
         # update current battery percentage
         self.battery_percentage = (
