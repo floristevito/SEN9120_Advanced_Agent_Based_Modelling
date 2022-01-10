@@ -34,9 +34,9 @@ class EV(ap.Agent):
             self.model.p.l_energy, self.model.p.m_energy, self.model.p.h_energy)
         if self.model.random.uniform(0,1) < self.model.p.p_pref:
             if self.model.random.uniform(0,1) < self.model.p.pref_home:
-                self.charge_pref = 'home'
+                self.charge_pref = 'home' # Home
             else:
-                self.charge_pref = 'work'
+                self.charge_pref = 'work' # Work
         else:
             self.charge_pref = None
         self.current_battery_volume = None
@@ -52,6 +52,13 @@ class EV(ap.Agent):
         self.allowed_VTG_percentage = None
         self.force_charge = False
         self.plugged_in = False
+        self.stick_to_pref = None
+
+    def determine_strick_to_pref(self):
+        if self.model.random.uniform(0,1) <= self.model.p.pref_strictness:
+            self.stick_to_pref = True
+        else:
+            self.stick_to_pref = False
 
     def choose_cheapest_timesteps(self, starting_time, ending_time, charge_needed):
         '''This function will tell you the most economic (cheap) way of getting to a full charge within the time window, if possible
@@ -108,6 +115,7 @@ class EV(ap.Agent):
     def arrive_work(self):
         self.current_location = 'work'
         self.moving = False
+        self.determine_strick_to_pref()
         self.return_time = self.model.t + self.dwell_time + self.offset_dwell
         self.plugged_in = True
         self.model.municipalities.select(
@@ -130,6 +138,7 @@ class EV(ap.Agent):
     def arrive_home(self):
         self.current_location = 'home'
         self.moving = False
+        self.determine_strick_to_pref()
         self.plugged_in = True
         self.model.municipalities.select(
             self.model.municipalities.id == self.home_id).current_EVs.append(self)
@@ -249,14 +258,23 @@ class EV(ap.Agent):
 
         # Determine whether to charge or not based on pref
         #self.plugged_in = False
+        
         if self.current_location != 'onroad':
             if self.current_battery_volume >= self.energy_required:
                 if self.charge_pref != None:
                     self.plugged_in = True
                 else:
-                    if self.current_location == self.charge_pref:
+                    if (self.current_location == self.charge_pref and \
+                        self.stick_to_pref == True):
                         self.plugged_in = True
-                    else: 
+                    elif (self.current_location == self.charge_pref and \
+                          self.stick_to_pref == False):
+                        self.plugged_in = False
+                    elif (self.current_location != self.charge_pref and \
+                          self.stick_to_pref == False):
+                        self.plugged_in = True
+                    elif (self.current_location != self.charge_pref and \
+                          self.stick_to_pref == True):
                         self.plugged_in = False
             else:
                 self.plugged_in = True

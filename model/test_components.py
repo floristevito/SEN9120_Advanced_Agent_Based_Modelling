@@ -32,7 +32,8 @@ def example_model():
         'p_smart': 1,
         'seed': 4,
         'p_pref': 0.7,
-        'pref_home': 0.9
+        'pref_home': 0.9,
+        'pref_strictness': 0.9  
     }
     example_model = EtmEVsModel(example_params)
     example_model.run() # model must be run at least one step to fully initialize all EV variables and settings
