@@ -31,7 +31,8 @@ def example_params():
         'seed': 4,
         'p_pref': 0.7,
         'pref_home': 0.9,
-        'pref_strictness': 0.9  
+        'pref_strictness': 0.9,
+        'weekend_week_ratio': 0 
     }
 
 def test_number_agents(example_params):
