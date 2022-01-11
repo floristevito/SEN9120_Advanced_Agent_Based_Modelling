@@ -17,7 +17,7 @@ class EtmEVsModel(ap.Model):
     def setup(self):
         # configure model log
         logging.basicConfig(filename='model.log', filemode='w',
-                            format='%(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+                            format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
         # model properties
         self.price_history = [[0] for i in range(96)]
@@ -43,7 +43,7 @@ class EtmEVsModel(ap.Model):
             self.municipalities.number_EVs[index] = round(
                 self.p.percentage_ev * self.municipalities.inhabitants[index])
         self.weekend = False
-
+        self.t_weekend = 480
         # generate EV's
         # generate all EV agents
         self.EVs = ap.AgentList(self, sum(self.municipalities.number_EVs), EV)
@@ -94,10 +94,16 @@ class EtmEVsModel(ap.Model):
 
     def step(self):
         # update weekend property
-        if self.t % 480 == 0:
+        if self.t % self.t_weekend == 0:
             self.weekend = True
+            self.t_weekend += 672
         if self.t % 672 == 0:
             self.weekend = False
+
+        if self.weekend:
+            logging.info("{} Weekend day".format(self.t))
+        else:
+            logging.info("{} it's no weekend.".format(self.t))
 
         # for EVs
         self.fill_history()
