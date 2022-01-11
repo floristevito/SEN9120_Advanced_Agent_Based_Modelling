@@ -68,3 +68,15 @@ def test_max_drive_range_agents(example_params):
         range = i.battery_volume / i.energy_rate 
         ranges.append(range)
     assert max(ranges) < 1000
+
+def test_weekend_true(example_params):
+    example_params['steps'] = 481
+    example_model = EtmEVsModel(example_params)
+    example_model.run() 
+    assert example_model.weekend == True
+
+def test_weekend_false(example_params):
+    example_params['steps'] = 673
+    example_model = EtmEVsModel(example_params)
+    example_model.run() 
+    assert example_model.weekend == False

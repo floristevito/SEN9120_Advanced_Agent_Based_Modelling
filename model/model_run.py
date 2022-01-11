@@ -12,3 +12,5 @@ print('starting simulation')
 results = model.run()
 results.variables.EtmEVsModel.plot()
 results.variables.EtmEVsModel['average_battery_percentage'].plot()
+# t = np.mean(list(model.EVs.commute_distance))
+# 21.09440165940243

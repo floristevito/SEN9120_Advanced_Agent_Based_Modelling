@@ -42,6 +42,7 @@ class EtmEVsModel(ap.Model):
             self.municipalities.inhabitants[index] = self.municipalities_data.loc[key, 'AANT_INW']
             self.municipalities.number_EVs[index] = round(
                 self.p.percentage_ev * self.municipalities.inhabitants[index])
+        self.weekend = False
 
         # generate EV's
         # generate all EV agents
@@ -92,6 +93,12 @@ class EtmEVsModel(ap.Model):
             'average energy rate of EVs (kWh/km): {}'.format(np.mean(list(self.EVs.energy_rate))))
 
     def step(self):
+        # update weekend property
+        if self.t % 480 == 0:
+            self.weekend = True
+        if self.t % 672 == 0:
+            self.weekend = False
+
         # for EVs
         self.fill_history()
         self.calc_ma_price_history()

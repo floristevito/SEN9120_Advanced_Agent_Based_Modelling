@@ -230,13 +230,18 @@ class EV(ap.Agent):
         """step function for EV, is called for every agent every time step"""
         # move, determine location and destination
         if (self.model.t % (self.departure_time + self.offset_dep) == 0) and (self.current_location == 'home'):
-            if self.current_battery_volume >= self.energy_required:
-                self.departure_work()
-            else:
-                logging.warning(
-                    'charge too low to go in morning, should not happen')
-                self.departure_time += 1
-                self.charge()
+            # check if weekend
+            if self.model.weekend:
+                if self.model.random.uniform(0,1) < self.model.p.weekend_week_ratio:
+                    if self.current_battery_volume >= self.energy_required:
+                        self.departure_work()
+                    else:
+                        logging.warning(
+                            'charge too low to go in morning, should not happen')
+                        self.departure_time += 1
+                        self.charge()
+                else:
+                    self.departure_time += 96
         elif (self.model.t == self.arrival_time_work) and (self.current_location == 'onroad'):
             self.arrive_work()
         elif (self.model.t % self.return_time == 0) and (self.current_location == 'work'):
@@ -257,8 +262,6 @@ class EV(ap.Agent):
                 self.model.t, self.offset_dep))
 
         # Determine whether to charge or not based on pref
-        #self.plugged_in = False
-        
         if self.current_location != 'onroad':
             if self.current_battery_volume >= self.energy_required:
                 if self.charge_pref != None:
@@ -306,6 +309,7 @@ class EV(ap.Agent):
         # determine current power demand and VTG capacity
         self.determine_power_demand()
 
+        # final logging
         logging.debug('time {} battery_info car {} has {} percent battery, (absolute: {})'.format(
             self.model.t, self.id, self.battery_percentage, self.current_battery_volume))
 
