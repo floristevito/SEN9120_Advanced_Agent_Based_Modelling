@@ -327,16 +327,28 @@ class Municipality(ap.Agent):
     def setup(self):
         self.current_EVs = []
         self.current_power_demand = None
+        self.current_vtg_capacity = None
+        self.average_battery_percentage = None
         self.number_EVs = None
+
+    def update_number_EVs(self):
+        self.number_EVs = len(self.current_EVs)
 
     def update_power_demand(self):
         all_demand = [ev.current_power_demand for ev in self.current_EVs]
         self.current_power_demand = sum(all_demand)
 
-    def update_number_EVs(self):
-        self.number_EVs = len(self.current_EVs)
+    def update_vtg(self):
+        vtg = [ev.VTG_capacity for ev in self.current_EVs]
+        self.current_vtg_capacity = vtg
+    
+    def update_battery_percentage(self):
+        percentage = [ev.battery_percentage for ev in self.current_EVs]
+        self.average_battery_percentage = percentage
 
     def step(self):
         """updates all manucipality stats"""
         self.update_power_demand()
         self.update_number_EVs()
+        self.update_vtg()
+        self.update_battery_percentage()
