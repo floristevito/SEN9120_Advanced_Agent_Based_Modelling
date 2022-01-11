@@ -129,10 +129,14 @@ class EtmEVsModel(ap.Model):
     def update(self):
         """ Record dynamic variables """
         self.record('average_battery_percentage')
+        self.municipalities.record('average_battery_percentage')
         self.record('total_current_power_demand')
+        self.municipalities.record('current_power_demand')
         self.record('total_VTG_capacity')
+        self.municipalities.record('current_vtg_capacity')
         self.record('mean_charging')
         self.municipalities.record('current_power_demand')
+        self.municipalities.record('number_EVs')
 
     def fill_history(self):
         '''
