@@ -340,11 +340,13 @@ class Municipality(ap.Agent):
 
     def update_vtg(self):
         vtg = [ev.VTG_capacity for ev in self.current_EVs]
-        self.current_vtg_capacity = np.mean(vtg)
+        if vtg:
+            self.current_vtg_capacity = np.mean(vtg)
     
     def update_battery_percentage(self):
         percentage = [ev.battery_percentage for ev in self.current_EVs]
-        self.average_battery_percentage = np.mean(percentage)
+        if percentage:
+            self.average_battery_percentage = np.mean(percentage)
 
     def step(self):
         """updates all manucipality stats"""
