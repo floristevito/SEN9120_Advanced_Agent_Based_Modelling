@@ -145,6 +145,9 @@ class EtmEVsModel(ap.Model):
         SHOULD BE DONE ON SUPERCLASS LEVEL TO SAVE DATA AND COMPUTATIONS
 
         '''
+        index = self.t
+        if self.t > len(self.Electricity_price['Electricity_price']):
+            index = self.t % len(self.Electricity_price['Electricity_price'])
         self.price_history[(
             self.t % 96)-1].append(round(self.Electricity_price['Electricity_price'][self.t], 2))
 
