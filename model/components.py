@@ -233,15 +233,20 @@ class EV(ap.Agent):
             # check if weekend
             if self.model.weekend:
                 if self.model.random.uniform(0,1) < self.model.p.weekend_week_ratio:
-                    if self.current_battery_volume >= self.energy_required:
-                        self.departure_work()
-                    else:
-                        logging.warning(
-                            'charge too low to go in morning, should not happen')
-                        self.departure_time += 1
-                        self.charge()
+                    depart = True
                 else:
+                    depart = False
                     self.departure_time += 96
+            else:
+                depart = True
+            
+            if self.current_battery_volume >= self.energy_required and depart:
+                    self.departure_work()
+            else:
+                logging.warning(
+                    'charge too low to go in morning, should not happen')
+                self.departure_time += 1
+                self.charge()
         elif (self.model.t == self.arrival_time_work) and (self.current_location == 'onroad'):
             self.arrive_work()
         elif (self.model.t % self.return_time == 0) and (self.current_location == 'work'):
