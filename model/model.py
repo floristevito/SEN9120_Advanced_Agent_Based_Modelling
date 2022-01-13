@@ -48,7 +48,8 @@ class EtmEVsModel(ap.Model):
         self.t_weekend = 480
         # generate EV's
         # generate all EV agents
-        self.EVs = ap.AgentList(self, sum(self.municipalities.number_EVs), EV)
+        self.number_evs = sum(self.municipalities.number_EVs)
+        self.EVs = ap.AgentList(self, self.number_evs, EV)
         index = 0  # keeps track of the EV index
         # give the right properties to every EV according to the data prep file
         for mun in self.municipalities:
