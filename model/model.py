@@ -53,13 +53,15 @@ class EtmEVsModel(ap.Model):
         index = 0  # keeps track of the EV index
         # give the right properties to every EV according to the data prep file
         for mun in self.municipalities:
+            if mun.number_EVs > 0:
+                sampled_dest = mun.OD.sample(
+                        mun.number_EVs, weights='p_flow', random_state=self.p.seed, replace=True)
             for ev in range(mun.number_EVs):
                 # set home location
                 self.EVs.home_location[index] = mun.name
                 self.EVs.home_id[index] = mun.id
                 # pick destination, higher p_flow gives higher chance to be picked
-                mapped_dest = mun.OD.sample(
-                    1, weights='p_flow', random_state=self.p.seed)
+                mapped_dest = sampled_dest.iloc[[ev]]
                 self.EVs.work_location_id[index] = mapped_dest['destination_id'].iloc[0]
                 self.EVs.work_location_name[index] = self.municipalities_data.loc[self.EVs.work_location_id[index], 'GM_NAAM']
                 self.EVs.commute_distance[index] = mapped_dest['distance'].iloc[0]
@@ -74,10 +76,11 @@ class EtmEVsModel(ap.Model):
                     self.EVs.battery_volume[index] = self.EVs.energy_required[index]
                     logging.warning(
                         'vehicle created with extended volume outside max volume range')
-                # check if battery volume is enough to reach destination, if not get a different value from distribution
-                while self.EVs.battery_volume[index] < self.EVs.energy_required[index]:
-                    self.EVs.battery_volume[index] = self.random.triangular(
-                        self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
+                # check if battery volume is enough to reach destination, if not draw triangular going down from energy required
+                if self.EVs.battery_volume[index] < self.EVs.energy_required[index]:
+                    self.EVs.battery_volume[index] = self.random.triangular(self.EVs.energy_required[index], self.EVs.energy_required[index] + 1, self.model.p.h_vol)  
+                    # self.EVs.battery_volume[index] = self.random.triangular(
+                    #     self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
                 # set current volume to final max volume
                 self.EVs.current_battery_volume[index] = self.EVs.battery_volume[index]
                 # set VTG percentage
