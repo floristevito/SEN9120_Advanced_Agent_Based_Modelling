@@ -5,6 +5,7 @@ from components import *
 from OD_matrix import (generate_OD)
 import logging
 import numpy as np
+from timeit import default_timer as timer
 
 """
 Main model block
@@ -15,6 +16,7 @@ class EtmEVsModel(ap.Model):
     """Main model that simulates electric vehicles."""
 
     def setup(self):
+        start = timer()
         # configure model log
         logging.basicConfig(filename='model.log', filemode='w',
                             format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -81,7 +83,8 @@ class EtmEVsModel(ap.Model):
                 self.EVs.allowed_VTG_percentage = self.model.p.VTG_percentage
                 mun.current_EVs.append(self.EVs[index])
                 index += 1
-
+        end = timer()
+        logging.info("Model init completed in {} seconds".format(end - start))
         # push some stats to log file
         logging.info('MODEL CONFIGURATION')
         logging.info('EVs in model: {}'.format(len(self.EVs)))
