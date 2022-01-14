@@ -19,7 +19,7 @@ class EtmEVsModel(ap.Model):
         start = timer()
         # configure model log
         logging.basicConfig(filename='model.log', filemode='w',
-                            format='%(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+                            format='%(name)s - %(levelname)s - %(message)s', level=logging.WARN)
 
         # model properties
         self.price_history = [[0] for i in range(96)]
