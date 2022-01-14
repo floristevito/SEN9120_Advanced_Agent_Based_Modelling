@@ -8,7 +8,7 @@ def example_params():
         'steps': 10,
         'g': 0.000076,
         'm': 3,
-        'percentage_ev': 0.0000029 * 0.2,# 0.0000029 * 0.2,0.00003
+        'n_evs': 1,
         'VTG_percentage': 0.15,
         'charging_speed_min': 20,
         'charging_speed_max': 60,

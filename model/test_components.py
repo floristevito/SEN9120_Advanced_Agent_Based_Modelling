@@ -10,7 +10,7 @@ def example_model():
         'steps': 1,
         'g': 0.000076,
         'm': 3,
-        'percentage_ev': 0.0000029 * 0.2,# 0.0000029 * 0.2,0.00003
+        'n_evs': 1,
         'VTG_percentage': 0.15,
         'charging_speed_min': 20,
         'charging_speed_max': 60,
@@ -91,7 +91,7 @@ def test_arrive_work(example_model):
 def test_departure_home(example_model):
     ev = example_model.EVs[0]
     example_model.t = 80
-    ev.arrival_return_time = 80
+    ev.return_time = 80
     ev.current_location = 'work'
     example_model.municipalities.select(
             example_model.municipalities.id == ev.work_location_id).current_EVs.append(ev)
@@ -103,7 +103,7 @@ def test_departure_home(example_model):
 def test_delay_home_departure(example_model):
     ev = example_model.EVs[0]
     example_model.t = 80
-    ev.arrival_return_time = 80
+    ev.return_time = 80
     ev.current_location = 'work'
     example_model.municipalities.select(
             example_model.municipalities.id == ev.work_location_id).current_EVs.append(ev)
