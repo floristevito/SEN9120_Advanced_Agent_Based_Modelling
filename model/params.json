@@ -1,8 +1,8 @@
 {
-    "steps": 1,
+    "steps": 1344,
     "g": 0.000076,
     "m": 3,
-    "n_evs": 17400,
+    "n_evs": 174000,
     "VTG_percentage": 0.15,
     "charging_speed_min": 20,
     "charging_speed_max": 60,
@@ -26,5 +26,5 @@
     "p_pref": 0.7,
     "pref_home": 0.9,
     "pref_strictness": 0.9,
-    "weekend_week_ratio": 0
+    "weekend_week_ratio": 0.8
 }

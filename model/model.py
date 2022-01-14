@@ -35,17 +35,19 @@ class EtmEVsModel(ap.Model):
         self.municipalities_data = pd.read_csv(
             '../data/gemeenten.csv').set_index('GM_CODE')
         # generate all manucipality agents
-        self.municipalities = ap.AgentList(self, len(self.OD), Municipality)
+        self.municipalities = ap.AgentList(self, 0, Municipality)
         # calculate percentage evs
         percentage_ev = self.p.n_evs / sum(self.municipalities_data['AANT_INW'])
         # give the right properties to every municipality according to data prep file
         for index, (key, value) in enumerate(self.OD.items()):
-            self.municipalities.id[index] = key
-            self.municipalities.name[index] = self.municipalities_data.loc[key, 'GM_NAAM']
-            self.municipalities.OD[index] = value
-            self.municipalities.inhabitants[index] = self.municipalities_data.loc[key, 'AANT_INW']
-            self.municipalities.number_EVs[index] = round(
-                percentage_ev * self.municipalities.inhabitants[index])
+            new_mun = Municipality(self)
+            new_mun.id = key
+            new_mun.name = self.municipalities_data.loc[key, 'GM_NAAM']
+            new_mun.OD = value
+            new_mun.inhabitants = self.municipalities_data.loc[key, 'AANT_INW']
+            new_mun.number_EVs = round(
+                percentage_ev * new_mun.inhabitants)
+            self.municipalities.append(new_mun)
         self.weekend = False
         self.t_weekend = 480
         # correct rounding in number evs
@@ -71,40 +73,37 @@ class EtmEVsModel(ap.Model):
                         mun.number_EVs, weights='p_flow', random_state=self.p.seed, replace=True)
             for ev in range(mun.number_EVs):
                 # generate ev and add to agentlist
-                new_ev = EV()
-                self.EVs.append(new_ev)
+                new_ev = EV(self)
                 # set home location
-                self.EVs.home_location[index] = mun.name
-                self.EVs.home_id[index] = mun.id
+                new_ev.home_location = mun.name
+                new_ev.home_id = mun.id
                 # pick destination, higher p_flow gives higher chance to be picked
                 mapped_dest = sampled_dest.iloc[[ev]]
-                work_location_id = mapped_dest['destination_id'].iloc[0]
-                self.EVs.work_location_id[index] = work_location_id
-                self.EVs.work_location_name[index] = self.municipalities_data.loc[work_location_id, 'GM_NAAM']
-                commute_distance = mapped_dest['distance'].iloc[0]
-                self.EVs.commute_distance[index] = commute_distance
+                new_ev.work_location_id = mapped_dest['destination_id'].iloc[0]
+                new_ev.work_location_name = self.municipalities_data.loc[new_ev.work_location_id, 'GM_NAAM']
+                new_ev.commute_distance = mapped_dest['distance'].iloc[0]
                 # travel times in 15 minutes units
-                self.EVs.travel_time[index] = max(1, round(
-                    commute_distance/self.p.average_driving_speed))  # give at least 1 time step
+                new_ev.travel_time = max(1, round(
+                    new_ev.commute_distance/self.p.average_driving_speed))  # give at least 1 time step
                 # give a enery required for trip memory
-                energy_required = self.EVs.energy_rate[index] * \
-                    commute_distance
-                self.EVs.energy_required[index] = energy_required
+                new_ev.energy_required = new_ev.energy_rate * \
+                    new_ev.commute_distance
                 # check if maximum battery volume in model is enough to reach destination, if not, give the value needed to reach destination
-                if self.model.p.h_vol < energy_required:
-                    self.EVs.battery_volume[index] = energy_required
+                if self.model.p.h_vol < new_ev.energy_required:
+                    new_ev.battery_volume = new_ev.energy_required
                     logging.warning(
                         'vehicle created with extended volume outside max volume range')
                 # check if battery volume is enough to reach destination, if not draw triangular going down from energy required
-                if self.EVs.battery_volume[index] < energy_required:
-                    self.EVs.battery_volume[index] = self.random.triangular(energy_required, energy_required + 1, self.model.p.h_vol)  
+                if new_ev.battery_volume < new_ev.energy_required:
+                    new_ev.battery_volume = self.random.triangular(new_ev.energy_required, new_ev.energy_required + 1, self.model.p.h_vol)  
                     # self.EVs.battery_volume[index] = self.random.triangular(
                     #     self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
                 # set current volume to final max volume
-                self.EVs.current_battery_volume[index] = self.EVs.battery_volume[index] * 0.9
+                new_ev.current_battery_volume = new_ev.battery_volume * 0.9
                 # set VTG percentage
-                self.EVs.allowed_VTG_percentage = self.model.p.VTG_percentage
-                mun.current_EVs.append(self.EVs[index])
+                new_ev.allowed_VTG_percentage = self.model.p.VTG_percentage
+                mun.current_EVs.append(new_ev)
+                self.EVs.append(new_ev)
                 index += 1
             mun_end = timer()
             logging.debug("mun {} complete, create {} evs, total {} evs created, create time {}, time now {}, evs per sec {}".\
