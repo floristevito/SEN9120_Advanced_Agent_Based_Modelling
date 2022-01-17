@@ -88,7 +88,7 @@ class EV(ap.Agent):
         else:
             # give all indexes + starting_time that are cheapest
             timewindow = np.array(total_time_window.copy())
-            idx = np.argpartition(timewindow, timesteps_needed)
+            idx = np.argpartition(timewindow, timesteps_needed - 1)
             cheapest_timesteps = idx[:timesteps_needed].tolist()
             self.cheapest_timesteps = [
                 i + starting_time for i in cheapest_timesteps]

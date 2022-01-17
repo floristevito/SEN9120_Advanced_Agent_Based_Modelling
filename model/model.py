@@ -21,7 +21,7 @@ class EtmEVsModel(ap.Model):
         start = timer()
         # configure model log
         logging.basicConfig(filename='model.log', filemode='w',
-                            format='%(name)s - %(levelname)s - %(message)s', level=logging.WARN)
+                            format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
         # model properties
         self.price_history = [[0] for i in range(96)]
         self.ma_price_history = []
@@ -78,8 +78,14 @@ class EtmEVsModel(ap.Model):
         for mun in self.municipalities:
             mun_start = timer()
             if mun.number_EVs > 0:
+                # for experimentation reasons set seed used by pandas \
+                    # to random value if no parameter for model seed is provided 
+                if 'seed' not in self.p:
+                    pandas_seed = self.random.randint(0, 1000000)
+                else:
+                    pandas_seed = self.p.seed
                 sampled_dest = mun.OD.sample(
-                        mun.number_EVs, weights='p_flow', random_state=self.p.seed, replace=True)
+                        mun.number_EVs, weights='p_flow', random_state=pandas_seed, replace=True)
             for ev in range(mun.number_EVs):
                 # generate ev and add to agentlist
                 new_ev = EV(self)
@@ -169,13 +175,24 @@ class EtmEVsModel(ap.Model):
 
     def update(self):
         """ Record dynamic variables """
+        # model level, record and add to list for end stats (if not None)
         self.record('average_battery_percentage')
-        self.municipalities.record('average_battery_percentage')
+        if self.average_battery_percentage:
+            self.list_average_battery_percentage.append(self.average_battery_percentage)
         self.record('total_current_power_demand')
-        self.municipalities.record('current_power_demand')
+        if self.total_current_power_demand:
+            self.list_total_current_power_demand.append(self.total_current_power_demand)
         self.record('total_VTG_capacity')
-        self.municipalities.record('current_vtg_capacity')
+        if self.total_VTG_capacity:
+            self.list_total_VTG_capacity.append(self.total_VTG_capacity)
         self.record('mean_charging')
+        if self.mean_charging:
+            self.list_mean_charging.append(self.mean_charging)
+
+        # municipality level
+        self.municipalities.record('average_battery_percentage')
+        self.municipalities.record('current_power_demand')
+        self.municipalities.record('current_vtg_capacity')
         self.municipalities.record('current_power_demand')
         self.municipalities.record('number_EVs')
 
@@ -209,14 +226,13 @@ class EtmEVsModel(ap.Model):
         if self.list_average_battery_percentage:
             self.report('min_average_battery_percentage', min(self.list_average_battery_percentage))
             self.report('mean_average_battery_percentage', np.mean(self.list_average_battery_percentage))
-            self.report('max_average_battery_percentage', max(self.list_average_battery_percentage))
         else:
             logging.info('specified model parameters results in no records for average battery percentage')
 
         if self.list_total_current_power_demand:
             self.report('min_power_demand', min(self.list_total_current_power_demand))
             self.report('mean_power_demand', np.mean(self.list_total_current_power_demand))
-            self.report('min_power_demand', max(self.list_total_current_power_demand))
+            self.report('max_power_demand', max(self.list_total_current_power_demand))
         else:
             logging.info('specified model parameters results in no records for total current power demand')
 
