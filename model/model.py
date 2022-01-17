@@ -16,11 +16,12 @@ class EtmEVsModel(ap.Model):
     """Main model that simulates electric vehicles."""
 
     def setup(self):
+        
+        # start timer for log
         start = timer()
         # configure model log
         logging.basicConfig(filename='model.log', filemode='w',
                             format='%(name)s - %(levelname)s - %(message)s', level=logging.WARN)
-
         # model properties
         self.price_history = [[0] for i in range(96)]
         self.ma_price_history = []
@@ -30,14 +31,22 @@ class EtmEVsModel(ap.Model):
         self.total_current_power_demand = None
         self.total_VTG_capacity = None
         self.mean_charging = None
+        self.list_average_battery_percentage = []
+        self.list_total_current_power_demand = []
+        self.list_total_VTG_capacity = []
+        self.list_mean_charging = []
+
         # generate the manicipalities according to data prep file
         self.OD = generate_OD(self.p.g, self.p.m)
         self.municipalities_data = pd.read_csv(
             '../data/gemeenten.csv').set_index('GM_CODE')
+
         # generate all manucipality agents
         self.municipalities = ap.AgentList(self, 0, Municipality)
+
         # calculate percentage evs
         percentage_ev = self.p.n_evs / sum(self.municipalities_data['AANT_INW'])
+
         # give the right properties to every municipality according to data prep file
         for index, (key, value) in enumerate(self.OD.items()):
             new_mun = Municipality(self)
@@ -109,7 +118,11 @@ class EtmEVsModel(ap.Model):
             logging.debug("mun {} complete, create {} evs, total {} evs created, create time {}, time now {}, evs per sec {}".\
                 format(mun.name, mun.number_EVs, index + 1, round(mun_end - mun_start), \
                     round(mun_end - start), round(mun.number_EVs / (mun_end - mun_start))))
+
+        # end timer for log model init
         end = timer()
+        
+        # additional logging
         logging.info("Model init completed in {} seconds".format(end - start))
         # push some stats to log file
         logging.info('MODEL CONFIGURATION')
@@ -128,7 +141,6 @@ class EtmEVsModel(ap.Model):
             self.t_weekend += 672
         if self.t % 672 == 0:
             self.weekend = False
-
         if self.weekend:
             logging.info("{} Weekend day".format(self.t))
         else:
@@ -157,6 +169,7 @@ class EtmEVsModel(ap.Model):
 
     def update(self):
         """ Record dynamic variables """
+<<<<<<< Updated upstream
         self.record('average_battery_percentage')
         self.municipalities.record('average_battery_percentage')
         self.record('total_current_power_demand')
@@ -164,6 +177,26 @@ class EtmEVsModel(ap.Model):
         self.record('total_VTG_capacity')
         self.municipalities.record('current_vtg_capacity')
         self.record('mean_charging')
+=======
+        # model level, record and add to list for end stats (if not None)
+        self.record('average_battery_percentage')
+        if self.average_battery_percentage:
+            self.list_average_battery_percentage.append(self.average_battery_percentage)
+        self.record('total_current_power_demand')
+        if self.total_current_power_demand:
+            self.list_total_current_power_demand.append(self.total_current_power_demand)
+        self.record('total_VTG_capacity')
+        if self.total_VTG_capacity:
+            self.list_total_VTG_capacity.append(self.total_VTG_capacity)
+        self.record('mean_charging')
+        if self.mean_charging:
+            self.list_mean_charging.append(self.mean_charging)
+
+        # municipality level
+        self.municipalities.record('average_battery_percentage')
+        self.municipalities.record('current_power_demand')
+        self.municipalities.record('current_vtg_capacity')
+>>>>>>> Stashed changes
         self.municipalities.record('current_power_demand')
         self.municipalities.record('number_EVs')
 
@@ -191,3 +224,21 @@ class EtmEVsModel(ap.Model):
         for i in self.price_history:
             segment = i[max(-7, -len(i)):]
             self.ma_price_history.append(round(np.mean(segment), 2))
+    
+    def end(self):
+        """ report at end of the model"""
+        self.report('min_average_battery_percentage', min(self.list_average_battery_percentage))
+        self.report('mean_average_battery_percentage', np.mean(self.list_average_battery_percentage))
+        self.report('max_average_battery_percentage', max(self.list_average_battery_percentage))
+
+        self.report('min_power_demand', min(self.list_total_current_power_demand))
+        self.report('mean_power_demand', np.mean(self.list_total_current_power_demand))
+        self.report('min_power_demand', max(self.list_total_current_power_demand))
+
+        self.report('min_VTG_capacity', min(self.list_total_VTG_capacity))
+        self.report('mean_VTG_capacity', np.mean(self.list_total_VTG_capacity))
+        self.report('max_VTG_capacity', max(self.list_total_VTG_capacity))
+
+        self.report('min_mean_charging', min(self.list_mean_charging))
+        self.report('mean_mean_charging', np.mean(self.list_mean_charging))
+        self.report('max_mean_charging', max(self.list_mean_charging))
