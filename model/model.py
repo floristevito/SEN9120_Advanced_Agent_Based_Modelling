@@ -169,7 +169,6 @@ class EtmEVsModel(ap.Model):
 
     def update(self):
         """ Record dynamic variables """
-<<<<<<< Updated upstream
         self.record('average_battery_percentage')
         self.municipalities.record('average_battery_percentage')
         self.record('total_current_power_demand')
@@ -177,26 +176,6 @@ class EtmEVsModel(ap.Model):
         self.record('total_VTG_capacity')
         self.municipalities.record('current_vtg_capacity')
         self.record('mean_charging')
-=======
-        # model level, record and add to list for end stats (if not None)
-        self.record('average_battery_percentage')
-        if self.average_battery_percentage:
-            self.list_average_battery_percentage.append(self.average_battery_percentage)
-        self.record('total_current_power_demand')
-        if self.total_current_power_demand:
-            self.list_total_current_power_demand.append(self.total_current_power_demand)
-        self.record('total_VTG_capacity')
-        if self.total_VTG_capacity:
-            self.list_total_VTG_capacity.append(self.total_VTG_capacity)
-        self.record('mean_charging')
-        if self.mean_charging:
-            self.list_mean_charging.append(self.mean_charging)
-
-        # municipality level
-        self.municipalities.record('average_battery_percentage')
-        self.municipalities.record('current_power_demand')
-        self.municipalities.record('current_vtg_capacity')
->>>>>>> Stashed changes
         self.municipalities.record('current_power_demand')
         self.municipalities.record('number_EVs')
 
@@ -227,18 +206,30 @@ class EtmEVsModel(ap.Model):
     
     def end(self):
         """ report at end of the model"""
-        self.report('min_average_battery_percentage', min(self.list_average_battery_percentage))
-        self.report('mean_average_battery_percentage', np.mean(self.list_average_battery_percentage))
-        self.report('max_average_battery_percentage', max(self.list_average_battery_percentage))
+        if self.list_average_battery_percentage:
+            self.report('min_average_battery_percentage', min(self.list_average_battery_percentage))
+            self.report('mean_average_battery_percentage', np.mean(self.list_average_battery_percentage))
+            self.report('max_average_battery_percentage', max(self.list_average_battery_percentage))
+        else:
+            logging.info('specified model parameters results in no records for average battery percentage')
 
-        self.report('min_power_demand', min(self.list_total_current_power_demand))
-        self.report('mean_power_demand', np.mean(self.list_total_current_power_demand))
-        self.report('min_power_demand', max(self.list_total_current_power_demand))
+        if self.list_total_current_power_demand:
+            self.report('min_power_demand', min(self.list_total_current_power_demand))
+            self.report('mean_power_demand', np.mean(self.list_total_current_power_demand))
+            self.report('min_power_demand', max(self.list_total_current_power_demand))
+        else:
+            logging.info('specified model parameters results in no records for total current power demand')
 
-        self.report('min_VTG_capacity', min(self.list_total_VTG_capacity))
-        self.report('mean_VTG_capacity', np.mean(self.list_total_VTG_capacity))
-        self.report('max_VTG_capacity', max(self.list_total_VTG_capacity))
+        if self.list_total_VTG_capacity:
+            self.report('min_VTG_capacity', min(self.list_total_VTG_capacity))
+            self.report('mean_VTG_capacity', np.mean(self.list_total_VTG_capacity))
+            self.report('max_VTG_capacity', max(self.list_total_VTG_capacity))
+        else:
+            logging.info('specified model parameters results in no records for total VTG capacity')
 
-        self.report('min_mean_charging', min(self.list_mean_charging))
-        self.report('mean_mean_charging', np.mean(self.list_mean_charging))
-        self.report('max_mean_charging', max(self.list_mean_charging))
+        if self.list_mean_charging:
+            self.report('min_mean_charging', min(self.list_mean_charging))
+            self.report('mean_mean_charging', np.mean(self.list_mean_charging))
+            self.report('max_mean_charging', max(self.list_mean_charging))
+        else:
+            logging.info('specified model parameters results in no records for mean charging')
