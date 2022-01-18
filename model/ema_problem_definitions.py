@@ -25,10 +25,10 @@ def ema_problem(problem):
             IntegerParameter('average_driving_speed', 4, 25)
             ]
         model.constants = [
-            Constant('steps', 96), 
+            Constant('steps', 672), 
             Constant('g', 0.000076), 
             Constant('m', 3), 
-            Constant('n_evs', 17400),
+            Constant('n_evs', 1740),
             Constant('charging_speed_min', 20),
             Constant('charging_speed_max', 60),
             Constant('l_dep', 30),

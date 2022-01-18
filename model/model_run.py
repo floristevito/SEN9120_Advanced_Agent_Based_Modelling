@@ -6,7 +6,7 @@ from timeit import default_timer as timer
 
 start = timer()
 # load model parameters
-with open('params2.json') as file:
+with open('params.json') as file:
     params = json.load(file)
 
 # run simulation
