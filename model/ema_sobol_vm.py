@@ -14,6 +14,6 @@ ema_logging.log_to_stderr(ema_logging.INFO)
 model = ema_problem(2)
 
 with MultiprocessingEvaluator(model) as evaluator:
-    experiment_SOBOL, outcomes_SOBOL = evaluator.perform_experiments(scenarios = 650, uncertainty_sampling=SOBOL)
+    experiment_SOBOL, outcomes_SOBOL = evaluator.perform_experiments(scenarios = 1, uncertainty_sampling=SOBOL)
 
 sobol_results = save_results((experiment_SOBOL, outcomes_SOBOL), '../data/ema/sobol_results.tar.gz')
