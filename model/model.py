@@ -177,16 +177,16 @@ class EtmEVsModel(ap.Model):
         """ Record dynamic variables """
         # model level, record and add to list for end stats (if not None)
         self.record('average_battery_percentage')
-        if self.average_battery_percentage:
+        if self.average_battery_percentage is not None:
             self.list_average_battery_percentage.append(self.average_battery_percentage)
         self.record('total_current_power_demand')
-        if self.total_current_power_demand:
+        if self.total_current_power_demand is not None:
             self.list_total_current_power_demand.append(self.total_current_power_demand)
         self.record('total_VTG_capacity')
-        if self.total_VTG_capacity:
+        if self.total_VTG_capacity is not None:
             self.list_total_VTG_capacity.append(self.total_VTG_capacity)
         self.record('mean_charging')
-        if self.mean_charging:
+        if self.mean_charging is not None:
             self.list_mean_charging.append(self.mean_charging)
 
         # municipality level
