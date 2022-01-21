@@ -11,12 +11,19 @@ from timeit import default_timer as timer
 Main model block
 """
 
+def check_not_none(value):
+    """check if value is not None and not np.nan"""
+
+    if value is not None and not np.isnan(value):
+        return True
+    else:
+        return False
 
 class EtmEVsModel(ap.Model):
     """Main model that simulates electric vehicles."""
 
     def setup(self):
-        
+
         # start timer for log
         start = timer()
         # configure model log
@@ -45,7 +52,8 @@ class EtmEVsModel(ap.Model):
         self.municipalities = ap.AgentList(self, 0, Municipality)
 
         # calculate percentage evs
-        percentage_ev = self.p.n_evs / sum(self.municipalities_data['AANT_INW'])
+        percentage_ev = self.p.n_evs / \
+            sum(self.municipalities_data['AANT_INW'])
 
         # give the right properties to every municipality according to data prep file
         for index, (key, value) in enumerate(self.OD.items()):
@@ -79,13 +87,13 @@ class EtmEVsModel(ap.Model):
             mun_start = timer()
             if mun.number_EVs > 0:
                 # for experimentation reasons set seed used by pandas \
-                    # to random value if no parameter for model seed is provided 
+                # to random value if no parameter for model seed is provided
                 if 'seed' not in self.p:
                     pandas_seed = self.random.randint(0, 1000000)
                 else:
                     pandas_seed = self.p.seed
                 sampled_dest = mun.OD.sample(
-                        mun.number_EVs, weights='p_flow', random_state=pandas_seed, replace=True)
+                    mun.number_EVs, weights='p_flow', random_state=pandas_seed, replace=True)
             for ev in range(mun.number_EVs):
                 # generate ev and add to agentlist
                 new_ev = EV(self)
@@ -95,7 +103,8 @@ class EtmEVsModel(ap.Model):
                 # pick destination, higher p_flow gives higher chance to be picked
                 mapped_dest = sampled_dest.iloc[[ev]]
                 new_ev.work_location_id = mapped_dest['destination_id'].iloc[0]
-                new_ev.work_location_name = self.municipalities_data.loc[new_ev.work_location_id, 'GM_NAAM']
+                new_ev.work_location_name = self.municipalities_data.loc[
+                    new_ev.work_location_id, 'GM_NAAM']
                 new_ev.commute_distance = mapped_dest['distance'].iloc[0]
                 # travel times in 15 minutes units
                 new_ev.travel_time = max(1, round(
@@ -110,7 +119,8 @@ class EtmEVsModel(ap.Model):
                         'vehicle created with extended volume outside max volume range')
                 # check if battery volume is enough to reach destination, if not draw triangular going down from energy required
                 if new_ev.battery_volume < new_ev.energy_required:
-                    new_ev.battery_volume = self.random.triangular(new_ev.energy_required, new_ev.energy_required + 1, self.model.p.h_vol)  
+                    new_ev.battery_volume = self.random.triangular(
+                        new_ev.energy_required, new_ev.energy_required + 1, self.model.p.h_vol)
                     # self.EVs.battery_volume[index] = self.random.triangular(
                     #     self.model.p.l_vol, self.model.p.m_vol, self.model.p.h_vol)
                 # set current volume to final max volume
@@ -121,13 +131,13 @@ class EtmEVsModel(ap.Model):
                 self.EVs.append(new_ev)
                 index += 1
             mun_end = timer()
-            logging.debug("mun {} complete, create {} evs, total {} evs created, create time {}, time now {}, evs per sec {}".\
-                format(mun.name, mun.number_EVs, index + 1, round(mun_end - mun_start), \
-                    round(mun_end - start), round(mun.number_EVs / (mun_end - mun_start))))
+            logging.debug("mun {} complete, create {} evs, total {} evs created, create time {}, time now {}, evs per sec {}".
+                          format(mun.name, mun.number_EVs, index + 1, round(mun_end - mun_start),
+                                 round(mun_end - start), round(mun.number_EVs / (mun_end - mun_start))))
 
         # end timer for log model init
         end = timer()
-        
+
         # additional logging
         logging.info("Model init completed in {} seconds".format(end - start))
         # push some stats to log file
@@ -175,18 +185,20 @@ class EtmEVsModel(ap.Model):
 
     def update(self):
         """ Record dynamic variables """
-        # model level, record and add to list for end stats (if not None)
+        # model level, record and add to list for end stats (if not None and not np.nan)
         self.record('average_battery_percentage')
-        if self.average_battery_percentage >= 0:
-            self.list_average_battery_percentage.append(self.average_battery_percentage)
+        if check_not_none(self.average_battery_percentage):
+            self.list_average_battery_percentage.append(
+                self.average_battery_percentage)
         self.record('total_current_power_demand')
-        if self.total_current_power_demand >= 0:
-            self.list_total_current_power_demand.append(self.total_current_power_demand)
+        if check_not_none(self.total_current_power_demand):
+            self.list_total_current_power_demand.append(
+                self.total_current_power_demand)
         self.record('total_VTG_capacity')
-        if self.total_VTG_capacity >= 0:
+        if check_not_none(self.total_VTG_capacity):
             self.list_total_VTG_capacity.append(self.total_VTG_capacity)
         self.record('mean_charging')
-        if self.mean_charging >= 0:
+        if check_not_none(self.mean_charging):
             self.list_mean_charging.append(self.mean_charging)
 
         # municipality level
@@ -220,32 +232,55 @@ class EtmEVsModel(ap.Model):
         for i in self.price_history:
             segment = i[max(-7, -len(i)):]
             self.ma_price_history.append(round(np.mean(segment), 2))
-    
+
     def end(self):
         """ report at end of the model"""
         if self.list_average_battery_percentage:
-            self.report('min_average_battery_percentage', min(self.list_average_battery_percentage))
-            self.report('mean_average_battery_percentage', np.mean(self.list_average_battery_percentage))
+            self.report('min_average_battery_percentage', min(
+                self.list_average_battery_percentage))
+            self.report('mean_average_battery_percentage',
+                        np.mean(self.list_average_battery_percentage))
         else:
-            logging.info('specified model parameters results in no records for average battery percentage')
+            logging.info(
+                'specified model parameters results in no records for average battery percentage')
+
+        print(min(self.list_total_current_power_demand))
 
         if self.list_total_current_power_demand:
-            self.report('min_power_demand', min(self.list_total_current_power_demand))
-            self.report('mean_power_demand', np.mean(self.list_total_current_power_demand))
-            self.report('max_power_demand', max(self.list_total_current_power_demand))
+            # for some reason, storing a value of 0 gives an error in ema sobol analysis, so convert to 0.0000000001
+            min_value = min(self.list_total_current_power_demand)
+            if min_value == 0:
+                min_value = 0.0000000001
+            self.report('min_power_demand', min_value)
+            self.report('mean_power_demand', np.mean(
+                self.list_total_current_power_demand))
+            self.report('max_power_demand', max(
+                self.list_total_current_power_demand))
         else:
-            logging.info('specified model parameters results in no records for total current power demand')
+            logging.info(
+                'specified model parameters results in no records for total current power demand')
 
         if self.list_total_VTG_capacity:
-            self.report('min_VTG_capacity', min(self.list_total_VTG_capacity))
-            self.report('mean_VTG_capacity', np.mean(self.list_total_VTG_capacity))
+            # for some reason, storing a value of 0 gives an error in ema sobol analysis, so convert to 0.0000000001
+            min_value = min(self.list_total_VTG_capacity)
+            if min_value == 0:
+                min_value = 0.0000000001
+            self.report('min_VTG_capacity', min_value)
+            self.report('mean_VTG_capacity', np.mean(
+                self.list_total_VTG_capacity))
             self.report('max_VTG_capacity', max(self.list_total_VTG_capacity))
         else:
-            logging.info('specified model parameters results in no records for total VTG capacity')
+            logging.info(
+                'specified model parameters results in no records for total VTG capacity')
 
         if self.list_mean_charging:
-            self.report('min_mean_charging', min(self.list_mean_charging))
+            # for some reason, storing a value of 0 gives an error in ema sobol analysis, so convert to 0.0000000001
+            min_value = min(self.list_mean_charging)
+            if min_value == 0:
+                min_value = 0.0000000001
+            self.report('min_mean_charging', min_value)
             self.report('mean_mean_charging', np.mean(self.list_mean_charging))
             self.report('max_mean_charging', max(self.list_mean_charging))
         else:
-            logging.info('specified model parameters results in no records for mean charging')
+            logging.info(
+                'specified model parameters results in no records for mean charging')
