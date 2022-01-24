@@ -244,8 +244,6 @@ class EtmEVsModel(ap.Model):
             logging.info(
                 'specified model parameters results in no records for average battery percentage')
 
-        print(min(self.list_total_current_power_demand))
-
         if self.list_total_current_power_demand:
             # for some reason, storing a value of 0 gives an error in ema sobol analysis, so convert to 0.0000000001
             min_value = min(self.list_total_current_power_demand)
