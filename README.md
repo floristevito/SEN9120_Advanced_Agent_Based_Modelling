@@ -38,6 +38,17 @@ To run multiple experiments (we have devided it into 3 experiment files, so they
 
 `experiments1.py`
 
+## Running model visualization
+We have seperated model visualization from the model itself (seperation of concerns). Since visualization is not an import element of this research, only a very basic one is included.
+
+To run the model with visualization (according to specified params.jon), have a look at:
+
+`visualization_demo.ipynb`
+
+An example of a basic model visualization with 1000 EVs and 50% smart can be seen below:
+
+![Alt Text](https://github.com/floristevito/SEN9120_Advanced_Agent_Based_Modelling/blob/main/figures/vis.gif)
+
 ## Running python tests
 Pytest is used for testing. To run all test from the model directory run:
 
