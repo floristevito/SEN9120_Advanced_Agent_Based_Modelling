@@ -32,7 +32,7 @@ To perform a single run with settings specified in params.json:
 
 `model_run.py`
 
-Note that all model logs are saved in the automatically created model.log file in the working directory.
+*Note that all model logs are saved in the automatically created model.log file in the working directory.*
 
 To run multiple experiments (we have devided it into 3 experiment files, so they could be split over multiple virtual machines):
 
