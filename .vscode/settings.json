@@ -3,5 +3,6 @@
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
     "terminal.integrated.cwd": "model",
-    "cSpell.enabled": false
+    "cSpell.enabled": false,
+    "jupyter.jupyterServerType": "local"
 }
