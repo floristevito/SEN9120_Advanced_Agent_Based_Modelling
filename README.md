@@ -18,7 +18,7 @@ An overview of the main structure of this submission folder is shown below.
 ├── data              <- all data files, both input and output    
 ├── figures           <- all generated figures for the report   
 ├── geo_files         <- input spatial data  
-├── report            <- full Latex report code
+├── report            <- report and presentation files
 ```
 ## Requirements
 This project uses Python version 3.9. All requirements can be found in the requirements.txt file in the root folder of this directory, and can be installed using pip with the following command.
