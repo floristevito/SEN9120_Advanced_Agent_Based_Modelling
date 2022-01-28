@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# remove notebooks from language overview clutter
+.ipynb linguist-documentation
