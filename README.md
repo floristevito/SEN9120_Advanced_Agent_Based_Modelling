@@ -1,4 +1,4 @@
-Created by Group 22:
+Created by Group 1:
 |Name|Student Number|
 | --- | :-- |
 |Floris Boendermaker|4655605|
